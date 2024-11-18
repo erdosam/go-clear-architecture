@@ -1,0 +1,12 @@
+version: '3.2'
+
+services:
+  backend:
+    build:
+      context: .
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
+    volumes:
+    - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+
+#  web:

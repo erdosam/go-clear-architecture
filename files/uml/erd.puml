@@ -1,0 +1,213 @@
+@startuml
+'https://plantuml.com/class-diagram
+skinparam linetype ortho
+
+rectangle "system" as def#ccc {
+    entity "region" as reg {
+    *id: pk
+    *name:
+    *created_at
+    *created_by
+    }
+    note as N_region
+    Region can be layerred
+    Jawa > Jawa Barat > DKI
+    But not like parent relation
+    end note
+    N_region -- reg
+}
+
+rectangle profile as profile#ffc {
+    entity "user" as usr {
+    *id: fk
+    ...
+    }
+    entity "user_address" as addr {
+    *id: fk
+    *detail: char
+    *geohash:
+    *user_id: fk
+    *created_at:
+    *deleted_at:
+    }
+    usr ||--o{ addr
+}
+
+rectangle "product\n" as product#cfc {
+    entity "trash_category" as cat {
+    *id: pk
+    *name:
+    '+parent_category_id:
+    *group: fk
+    *created_at:
+    *created_by: fk
+    }
+    entity "trash_category_group" as cat_grp {
+    *key: char - pk
+    }
+    entity "trash_category_detail" as cat_dtl {
+    *id: pk
+    *category_id: fk
+    *description:
+    *image_url_md:
+    ~image_url_sm:
+    ~image_url_lg:
+    *created_at:
+    *created_by: fk
+    }
+    cat_dtl .[hidden] cat_grp
+    cat_dtl ||-- cat
+    cat_grp ||-- cat
+}
+
+rectangle order_handler as handler#ccf {
+    entity "partner" as ptn {
+    *id: pk
+    *name:
+    *owner_id: fk
+    *status:
+    *created_at:
+    *created_by: fk
+    }
+    entity "partner_detail" as ptn_dtl {
+    *id: pk
+    *partner_id: fk
+    *description:
+    *address:
+    *image_url_md:
+    ~image_url_sm:
+    ~image_url_lg:
+    *created_at:
+    *created_by: fk
+    }
+    entity "partner_point" as ptn_pt {
+    *id: pk
+    *partner_id: fk
+    *latitude:
+    *longitude:
+    *geohash:
+    *created_at:
+    *created_by: fk
+    }
+    entity "picker" as pick {
+    *id: pk
+    *user_id: fk
+    *partner_id: fk
+    *name:
+    *status:
+    *created_at:
+    *created_by: fk
+    }
+    entity "picker_partner_point" as pick_pt {
+    *id: pk
+    *picker_id: fk
+    *partner_point_id: fk
+    *created_at:
+    *created_by: fk
+    -index(picker_id)
+    -index(partner_point_id)
+    }
+    entity "partner_point_geohash" as ptn_pt_geo {
+    *id: pk
+    *partner_point_id: fk
+    *geohash:
+    *radius:
+    *created_at:
+    -index(partner_point_id)
+    -index(geohash)
+    -index(radius)
+    }
+    entity "cost_type" as cost_type {
+    *key: char - pk
+    }
+    entity "partner_category" as ptn_cat {
+    *id: pk
+    *partner_id: fk
+    *category_id: fk
+    *created_at:
+    *created_by: fk
+    }
+    entity "partner_category_cost" as ptn_cat_cost {
+    *id: pk
+    *partner_category_id: fk
+    *region: fk
+    *cost_type: fk
+    *cost_per_unit: float
+    *created_at:
+    *created_by: fk
+    }
+    ptn ||--o{ ptn_pt
+    ptn_pt ||--o{ ptn_pt_geo
+    ptn ||--o{ ptn_cat
+    ptn_dtl ||- ptn
+    ptn_cat ||--o{ ptn_cat_cost
+    ptn_cat_cost --|| cost_type
+    ptn ||-o{ pick
+    pick --|{ pick_pt
+    ptn_pt ||- pick_pt
+    pick }|..|{ ptn_pt
+}
+
+rectangle order#fcc {
+    rectangle cart#efc {
+        entity "user_cart" as cart {
+        *id: pk
+        *user_id: fk
+        }
+'        entity "cart_item" as itm {
+'        *id: pk
+'        *category_id:
+'        *quantity: int
+'        *created_at:
+'        *created_by: fk
+'        }
+    }
+    entity "order" as ord {
+    *id: pk
+    *address_id: fk
+    *created_at:
+    *created_by: fk
+    }
+    entity "order_status" as osts {
+    *id: pk
+    *order_id: fk
+    *status:
+    *created_at:
+    *created_by:
+    }
+'    entity "order_item" as oitm {
+'    *id: pk
+'    *order_id: fk
+'    *created_at:
+'    *created_by:
+'    }
+    entity "item" as item {
+    *id: pk
+    *category_id:
+    *quantity: int
+    *cart_id: fk
+    +order_id: fk
+    *created_at:
+    *created_by:
+    }
+    entity "item_image" as item_img {
+    *id: pk
+    *item_id: fk
+    *url:
+    *created_at:
+    *created_by:
+    }
+    ord --|{ osts
+    ord ||-|{ item
+    cart ||--o{ item
+    item ||--|{ item_img
+}
+
+usr ||--|| cart
+addr ||-- ord
+cat ||-- ptn_cat_cost
+cat ||-- item
+cat ||- ptn_cat
+ptn_cat_cost --|| reg
+
+@enduml

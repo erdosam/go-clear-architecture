@@ -1,0 +1,175 @@
+@startuml
+'https://plantuml.com/salt
+title "UI flow cart and orders"
+
+skinparam activity {
+BackgroundColor White
+}
+
+!unquoted procedure SALT($x)
+"{{
+salt
+%invoke_procedure("_"+$x)
+}}" as $x
+!endprocedure
+
+!procedure _categories()
+{
+<&grid-two-up> |Categories
+==|==|==
+<&magnifying-glass>|"Search categories"
+--|--|--
+<&image> |Furniture  |[<&plus> Add]
+<&image> |Electronic |[<&plus> Add]
+<&image> |Used Oil |[<&plus> Add]
+<&image> |Clothes |[<&plus> Add]
+<&image> |Used Medic |[<&plus> Add]
+<&image> |Machine |[<&plus> Add]
+<&image> |Organic |[<&plus> Add]
+}
+!endprocedure
+
+!procedure _cart_add_form()
+{
+<b>Add Furniture
+==|==
+"123             "|Items/Litter (Qty)
+--|--
+[<&plus> Add Item(s)]
+}
+!endprocedure
+
+!procedure _cart_add()
+{
+<b><&cart> My Cart
+==|==
+[X] Furniture (1 Big Item)|<&plus><&minus><color:red><&trash>
+[X] Used Oil (10 Gallon)|<&plus><&minus><color:red><&trash>
+[X] Organic (5 Bags)|<&plus><&minus><color:red><&trash>
+[] Electronic (1 Item)|<&plus><&minus><color:red><&trash>
+--|--
+[Order Pickup <&chevron-right>]
+}
+!endprocedure
+
+!procedure _order_form_ready()
+{
+<b>Create Orders
+==|==
+<b>Furniture|{[<&plus>]|[<&minus>]|[<color:red><&trash>]}
+Quantity|<b>1 Big Item
+Picker|"Buangin Station"
+Cost|Rp100.000
+[<color:blue>Cost Details]
+..|..
+<b>Organic ||{[<&plus>]|[<&minus>]|[<color:red><&trash>]}
+Quantity|<b>5 Bags
+Picker|"Buangin Station"
+Cost|Rp20.000
+[<color:blue>Cost Details]
+==|==
+<b>Used Oil ||{[<&plus>]|[<&minus>]|[<color:red><&trash>]}
+Quantity|<b>10 Gallon
+Picker|"Pengumpul Sampah"
+Cost|Rp50.000
+[<color:blue>Cost Details]
+==|==
+Total Cost|<b>Rp170.000
+[Create Order <&chevron-right>]
+~~|~~
+The default selected
+partners will be
+the cheapest cost
+}
+!endprocedure
+
+!procedure _select_partner()
+{
+<b>Select Partner |<b>Furniture
+==|==
+(X)Buangin Station|<b>Rp 100.000
+()Pejuang Sampah|Rp 150.000
+()Pengumpul Sampah|Rp 200.000
+--|--
+[Change Partner]
+}
+!endprocedure
+
+!procedure _partner_cost_detail()
+{
+<b>Cost drill down
+--|--
+Picker | <color:Green>Buangin Station
+Category|<color:Blue>Furniture
+Jemput|Rp75.000
+Pengolahan|Rp10.000
+Orang|Rp15.000
+--|--
+Total|Rp100.000
+}
+!endprocedure
+
+!procedure _order_payment()
+{
+<b>Payment Confirmation
+==|==
+You will pay for this amount!
+<b>Rp170.000
+--|--
+[Cancel Order]|[<color:Green>Continue <&chevron-right>]
+}
+!endprocedure
+
+!procedure _checkout_ok()
+{
+<b>Your orders
+==
+{^<color:green>Buangin Station
+<b>#ABCD1234
+<b>Furniture     |1 Big Item
+Cost|Rp100.000
+--|--
+<b>Organic |5 Bags
+Cost|Rp20.000
+--|--
+Status|Created
+[<color:blue><&chat>Chat]
+[<color:blue><&list>Cost Break Down]
+[<color:red><&x>Cancel Order]
+}
+{^<color:green>Pengumpul Sampah
+<b>#ABCD5678
+<b>Used Oil      |10 Gallon
+Cost|Rp50.000
+--|--
+Status|Created
+[<color:blue><&chat>Chat]
+[<color:blue><&list>Cost Break Down]
+[<color:red><&x>Cancel Order]
+}
+--
+Total Cost <b>Rp170.000
+}
+!endprocedure
+
+
+(*) --> SALT(categories)
+categories -->[set category quantity] SALT(cart_add_form)
+cart_add_form -->[add item to cart] SALT(cart_add)
+-right->[Add more item?] if "" then
+-up->[YES] categories
+endif
+cart_add -->[create order\nfrom selected items] SALT(order_form_ready)
+order_form_ready -right->[change partner] SALT(select_partner)
+select_partner .left>[changed] order_form_ready
+'order_form_ready --> order_form_ready
+order_form_ready .left>[see cost details] SALT(partner_cost_detail)
+order_form_ready--> SALT(order_payment)
+if "Continue Payment" then
+-up->[CANCEL] cart_add
+else
+-->[YES] SALT(checkout_ok)
+endif
+--> (*)
+
+@enduml
