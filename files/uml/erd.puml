@@ -80,21 +80,21 @@ rectangle order_handler as handler#ccf {
     *created_at:
     *created_by: fk
     }
-    entity "partner_point" as ptn_pt {
-    *id: pk
-    *partner_id: fk
-    *latitude:
-    *longitude:
-    *geohash:
-    *created_at:
-    *created_by: fk
-    }
     entity "picker" as pick {
     *id: pk
     *user_id: fk
     *partner_id: fk
     *name:
     *status:
+    *created_at:
+    *created_by: fk
+    }
+    entity "partner_point" as ptn_pt {
+    *id: pk
+    *partner_id: fk
+    *latitude:
+    *longitude:
+    *geohash:
     *created_at:
     *created_by: fk
     }
@@ -107,15 +107,17 @@ rectangle order_handler as handler#ccf {
     -index(picker_id)
     -index(partner_point_id)
     }
-    entity "partner_point_geohash" as ptn_pt_geo {
-    *id: pk
-    *partner_point_id: fk
-    *geohash:
-    *radius:
-    *created_at:
-    -index(partner_point_id)
-    -index(geohash)
-    -index(radius)
+    rectangle "partner_locator"#aaf {
+        entity "partner_point_geohash" as ptn_pt_geo {
+        *id: pk
+        *partner_point_id: fk
+        *geohash:
+        *radius:
+        *created_at:
+        -index(partner_point_id)
+        -index(geohash)
+        -index(radius)
+        }
     }
     entity "cost_type" as cost_type {
     *key: char - pk
@@ -149,18 +151,19 @@ rectangle order_handler as handler#ccf {
 }
 
 rectangle order#fcc {
-    rectangle cart#efc {
-        entity "user_cart" as cart {
+    rectangle carting#efc {
+'        entity "user_item" as usr_cart {
+'        *id: pk
+'        *user_id: fk
+'        }
+        entity "cart_item" as cart_itm {
         *id: pk
         *user_id: fk
+        *category_id: fk
+        *quantity: int
+        *created_at:
+        *created_by: fk
         }
-'        entity "cart_item" as itm {
-'        *id: pk
-'        *category_id:
-'        *quantity: int
-'        *created_at:
-'        *created_by: fk
-'        }
     }
     entity "order" as ord {
     *id: pk
@@ -181,12 +184,13 @@ rectangle order#fcc {
 '    *created_at:
 '    *created_by:
 '    }
-    entity "item" as item {
+    entity "order_item" as item {
     *id: pk
-    *category_id:
+    *user_id: fk
+    *category_id: fk
     *quantity: int
-    *cart_id: fk
-    +order_id: fk
+    *total_cost: float
+    *order_id: fk
     *created_at:
     *created_by:
     }
@@ -197,17 +201,29 @@ rectangle order#fcc {
     *created_at:
     *created_by:
     }
+    entity "order_item_cost_detail" as item_detail {
+    *id: pk
+    *order_item_id: fk
+    *partner_category_cost_id: fk
+    *cost: float
+    *created_at:
+    *created_by:
+    }
+
     ord --|{ osts
-    ord ||-|{ item
-    cart ||--o{ item
     item ||--|{ item_img
+    cart_itm ..> item: migrate when submitted
+    ord |o-|{ item
+    item ||--|{ item_detail
 }
 
-usr ||--|| cart
+usr ||--|| cart_itm
 addr ||-- ord
 cat ||-- ptn_cat_cost
 cat ||-- item
-cat ||- ptn_cat
+cart_itm --|| cat
+cat ||-- ptn_cat
 ptn_cat_cost --|| reg
+ptn_cat_cost ||- item_detail
 
 @enduml
