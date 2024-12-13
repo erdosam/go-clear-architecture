@@ -6,7 +6,10 @@ services:
       context: .
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
+      GIN_MODE: release
     volumes:
     - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+    ports:
+      - 8034:8080
 
 #  web:

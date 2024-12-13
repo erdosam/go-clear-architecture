@@ -1,6 +1,6 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.23-alpine as builder
 
-WORKDIR $GOPATH/src/github.com/gilkor/athena/
+WORKDIR $GOPATH/src/github.com/gilkor/ba-version-2/
 COPY ./go.* .
 RUN go mod download
 COPY . .
