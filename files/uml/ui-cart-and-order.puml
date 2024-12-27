@@ -1,7 +1,7 @@
 @startuml
 'https://plantuml.com/salt
 title "UI flow cart and orders"
-
+skinparam linetype ortho
 skinparam activity {
 BackgroundColor White
 }

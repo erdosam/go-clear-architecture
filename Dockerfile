@@ -1,4 +1,6 @@
-FROM golang:1.23-alpine as builder
+ARG GO_VERSION=1.23-alpine
+
+FROM golang:$GO_VERSION as builder
 
 WORKDIR $GOPATH/src/github.com/gilkor/ba-version-2/
 COPY ./go.* .

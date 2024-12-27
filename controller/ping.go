@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
-func Ping(context *gin.Context) {
-	context.JSON(http.StatusOK, "pong")
+func Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, "pong")
+}
+
+func PingHead(c *gin.Context) {
+	c.Status(http.StatusOK)
 }

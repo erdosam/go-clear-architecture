@@ -9,7 +9,18 @@ import (
 func ListenAndServe() {
 	app := gin.Default()
 
-	app.GET("ping", controller.Ping)
+	app.HEAD("/ping", controller.PingHead)
+	app.GET("/ping", controller.Ping)
+
+	authorized := app.Group("/", gin.BasicAuth(gin.Accounts{
+		"foo": "bar",
+	}))
+
+	// User's cart manager APIs
+	cart := authorized.Group("/cart")
+	{
+		cart.GET("", controller.CartList)
+	}
 
 	err := app.Run()
 	if err != nil {
