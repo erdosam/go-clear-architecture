@@ -24,9 +24,9 @@ rectangle profile as profile#ffc {
     }
     entity "user_address" as addr {
     *id: fk
+    *user_id: fk
     *detail: char
     *geohash:
-    *user_id: fk
     *created_at:
     *deleted_at:
     }

@@ -1,24 +1,12 @@
 services:
-  backend:
-    build:
-      context: .
-    environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
-      GIN_MODE: release
-    volumes:
-      - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
-    ports:
-      - 8045:8080
-    profiles:
-      - release
-
   dev:
     image: golang:${GO_VERSION}
-    command: ["go", "run", "."]
+    command: [ "go", "run", "./cmd/app" ]
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GOPATH: /go/
       GIN_MODE: debug
+      PG_URL: 'postgres://user:pass@postgres:5432/buangin?sslmode=disable'
     working_dir: "/go/src/github.com/gilkor/ba-version-2/"
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
@@ -27,3 +15,49 @@ services:
       - .:/go/src/github.com/gilkor/ba-version-2
     ports:
       - 8034:8080
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'pass'
+      POSTGRES_DB: 'buangin'
+    ports:
+      - 3432:5432
+
+  rabbitmq:
+    image: rabbitmq:3.8.12-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  app:
+    build: .
+    image: app
+    environment:
+      PG_URL: 'postgres://user:pass@postgres:5432/buangin'
+      RMQ_URL: 'amqp://guest:guest@rabbitmq:5672/'
+      GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
+      GIN_MODE: release
+    ports:
+      - 8045:8080
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+
+  integration:
+    build:
+      context: .
+      dockerfile: integration-test/Dockerfile
+    image: integration
+    depends_on:
+      - app
+
+volumes:
+  pg-data:
