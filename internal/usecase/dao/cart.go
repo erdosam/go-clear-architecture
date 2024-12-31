@@ -15,7 +15,7 @@ func NewCartingDAO(log logger.Interface, pg *postgres.Postgres) *cartingDAO {
 	return &cartingDAO{pg, log}
 }
 
-func (dao *cartingDAO) GetItemsByCart(c entity.Cart) ([]entity.CartItem, error) {
+func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error) {
 	var rows []entity.CartItem
 	q := dao.Rebind(`SELECT * FROM public.cart_item WHERE user_id = ?`)
 	err := dao.Select(&rows, q, c.UserId)

@@ -9,6 +9,7 @@ import (
 
 type Feature struct {
 	Carting usecase.Carting
+	Order   usecase.Order
 }
 
 func NewRouter(handler *gin.Engine, log logger.Interface, f Feature) {
@@ -16,13 +17,16 @@ func NewRouter(handler *gin.Engine, log logger.Interface, f Feature) {
 	handler.Use(gin.Recovery())
 	// Swagger
 	// TODO if you need this see https://github.com/evrone/go-clean-template
+
 	// K8s probe
 	handler.GET("/ping", func(c *gin.Context) { c.JSON(http.StatusOK, "pong") })
 	handler.HEAD("/ping", func(c *gin.Context) { c.Status(http.StatusOK) })
 	// Prometheus metrics
 	// TODO if you need this see https://github.com/evrone/go-clean-template
-	cartGroup := handler.Group("/v1")
+
+	v1 := handler.Group("/v1")
 	{
-		newCartingRoutes(cartGroup, f.Carting, log)
+		newCartingRoutes(v1, f.Carting, log)
+		newOrderRoutes(v1, f.Order, log)
 	}
 }

@@ -13,21 +13,17 @@ type cartingRoutes struct {
 }
 
 func newCartingRoutes(handler *gin.RouterGroup, cart usecase.Carting, log logger.Interface) {
-	uc := &cartingRoutes{
+	route := &cartingRoutes{
 		usecase: cart,
 	}
 
 	h := handler.Group("/cart")
 	{
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
-		h.GET("/items", uc.getItems)
-		h.POST("/add-item", uc.addItem)
+		h.GET("/items", route.getItems)
+		h.POST("/add-item", route.addItem)
 	}
 	log.Info("Done route : carting")
-}
-
-type cartItemResponse struct {
-	Items []entity.CartItem `json:"items"`
 }
 
 func (r *cartingRoutes) getItems(c *gin.Context) {
@@ -37,7 +33,7 @@ func (r *cartingRoutes) getItems(c *gin.Context) {
 		c.JSON(http.StatusNotFound, err)
 		return
 	}
-	c.JSON(http.StatusOK, cartItemResponse{items})
+	c.JSON(http.StatusOK, entity.CartItemResponse{Items: items})
 }
 
 func (r *cartingRoutes) addItem(c *gin.Context) {

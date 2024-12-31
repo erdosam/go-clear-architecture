@@ -1,0 +1,37 @@
+package v1
+
+import (
+	"github.com/arendi-project/ba-version-2/internal/usecase"
+	"github.com/arendi-project/ba-version-2/pkg/logger"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+type orderRoutes struct {
+	usecase usecase.Order
+}
+
+func newOrderRoutes(handler *gin.RouterGroup, uc usecase.Order, log logger.Interface) {
+	route := &orderRoutes{uc}
+	h := handler.Group("/orders")
+	{
+		h.GET("active", route.activeOrders)
+	}
+	h = handler.Group("/order")
+	{
+		h.GET("view", route.orderView)
+	}
+	log.Info("Done route : order")
+}
+
+func (r orderRoutes) activeOrders(c *gin.Context) {
+	c.JSON(http.StatusOK, []interface{}{})
+}
+
+func (r orderRoutes) orderView(c *gin.Context) {
+	order, err := r.usecase.GetOrderById("id")
+	if err != nil {
+		return
+	}
+	c.JSON(http.StatusOK, order)
+}

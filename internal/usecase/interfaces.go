@@ -2,7 +2,7 @@ package usecase
 
 import "github.com/arendi-project/ba-version-2/internal/entity"
 
-// form models
+// features
 type (
 	User interface {
 	}
@@ -10,14 +10,8 @@ type (
 		GetItems(c entity.Cart) ([]entity.CartItem, error)
 		AddItemToCart(i entity.CartItem, c entity.Cart) error
 	}
-)
-
-// DAOs
-type (
-	UserDAO interface {
-		GetUserById(id string) (entity.User, error)
-	}
-	CartingDAO interface {
-		GetItemsByCart(c entity.Cart) ([]entity.CartItem, error)
+	Order interface {
+		CreateMultipleItemsOrder(i []entity.CartItem) (entity.Order, error)
+		GetOrderById(id string) (entity.Order, error)
 	}
 )
