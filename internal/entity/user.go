@@ -4,6 +4,11 @@ type (
 	User struct {
 		Id string `db:"id" json:"id"`
 	}
+	// UserAccount will be like juno's account structure
+	UserAccount struct {
+		UserId string `db:"user_id"`
+	}
+
 	UserAddress struct {
 		Id        string `db:"id" json:"id"`
 		UserId    string `db:"user_id" json:"user_id"`

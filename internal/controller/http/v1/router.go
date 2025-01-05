@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"github.com/arendi-project/ba-version-2/config"
+	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -10,9 +12,10 @@ import (
 type Feature struct {
 	Carting usecase.Carting
 	Order   usecase.Order
+	User    usecase.User
 }
 
-func NewRouter(handler *gin.Engine, log logger.Interface, f Feature) {
+func NewRouter(handler *gin.Engine, cfg *config.Config, log logger.Interface, f Feature) {
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger
@@ -26,6 +29,7 @@ func NewRouter(handler *gin.Engine, log logger.Interface, f Feature) {
 
 	v1 := handler.Group("/v1")
 	{
+		middleware.NewJwtAuthentication(v1, f.User, log, cfg.Juno.ClientKeyFile)
 		newCartingRoutes(v1, f.Carting, log)
 		newOrderRoutes(v1, f.Order, log)
 	}

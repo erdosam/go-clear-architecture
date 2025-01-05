@@ -13,6 +13,7 @@ type (
 		HTTP `yaml:"http"`
 		Log  `yaml:"logger"`
 		PG   `yaml:"postgres"`
+		Juno `yaml:"juno"`
 		//RMQ  `yaml:"rabbitmq"`
 	}
 
@@ -36,6 +37,12 @@ type (
 	PG struct {
 		PoolMax int    `env-required:"true" yaml:"pool_max" env:"PG_POOL_MAX"`
 		URL     string `env-required:"true"                 env:"PG_URL"`
+	}
+
+	// Juno -.
+	Juno struct {
+		BaseUrl       string `env-required:"true" yaml:"base_url" env:"JUNO_BASE_URL"`
+		ClientKeyFile string `env-required:"true" yaml:"client_key_file" env:"JUNO_CLIENT_KEY_FILE"`
 	}
 
 	// RMQ -.

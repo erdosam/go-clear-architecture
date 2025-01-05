@@ -21,9 +21,10 @@ type mainComponent struct {
 }
 
 var (
-	comp       mainComponent
+	comp       *mainComponent
 	cartingDAO dao.CartingDAO
 	orderDAO   dao.OrderDAO
+	userDAO    dao.UserDAO
 	httpServer *httpserver.Server
 )
 
@@ -43,12 +44,13 @@ func initAppComponents(cfg *config.Config) {
 	if err != nil {
 		l.Fatal(fmt.Errorf("app.Run: %w", err))
 	}
-	comp = mainComponent{log: l, db: pg}
+	comp = &mainComponent{log: l, db: pg}
 }
 
 func initDAOs() {
 	cartingDAO = dao.NewCartingDAO(comp.log, comp.db)
 	orderDAO = dao.NewOrderDAO(comp.log, comp.db)
+	userDAO = dao.NewUserDAO(comp.log, comp.db)
 }
 
 func listenAndServe(cfg *config.Config) {
@@ -57,8 +59,9 @@ func listenAndServe(cfg *config.Config) {
 	feature := v1.Feature{
 		Carting: createCartingUseCase(),
 		Order:   createOrderUseCase(),
+		User:    createUserUseCase(),
 	}
-	v1.NewRouter(handler, comp.log, feature)
+	v1.NewRouter(handler, cfg, comp.log, feature)
 	httpServer = httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 }
 
@@ -68,6 +71,10 @@ func createCartingUseCase() usecase.Carting {
 
 func createOrderUseCase() usecase.Order {
 	return usecase.NewOrderUseCase(comp.log, orderDAO, cartingDAO)
+}
+
+func createUserUseCase() usecase.User {
+	return usecase.NewUserUseCase(comp.log, userDAO)
 }
 
 func waitSignal() {
@@ -86,5 +93,5 @@ func waitSignal() {
 	if err != nil {
 		comp.log.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
 	}
-	//TODO if you need rmqServer see https://github.com/evrone/go-clean-template
+	//TODO if you need rpc server see https://github.com/evrone/go-clean-template
 }

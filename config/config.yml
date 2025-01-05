@@ -15,3 +15,7 @@ postgres:
 rabbitmq:
   rpc_server_exchange: 'rpc_server'
   rpc_client_exchange: 'rpc_client'
+
+juno:
+  base_url: https://juno.domain.com/v2
+  client_key_file: /etc/juno/key.rsa.pub

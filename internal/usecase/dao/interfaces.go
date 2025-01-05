@@ -11,5 +11,6 @@ type (
 	}
 	OrderDAO interface {
 		FindOrderById(id string) (entity.Order, error)
+		FindActiveOrdersByUserId(userId string) ([]entity.Order, error)
 	}
 )

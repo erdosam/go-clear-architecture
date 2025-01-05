@@ -18,3 +18,7 @@ func NewOrderDAO(l logger.Interface, pg *postgres.Postgres) *orderDAO {
 func (o *orderDAO) FindOrderById(id string) (entity.Order, error) {
 	return entity.Order{}, nil
 }
+
+func (o *orderDAO) FindActiveOrdersByUserId(userId string) ([]entity.Order, error) {
+	return []entity.Order{}, nil
+}
