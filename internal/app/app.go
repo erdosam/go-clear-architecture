@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/arendi-project/ba-version-2/config"
+	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
 	v1 "github.com/arendi-project/ba-version-2/internal/controller/http/v1"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/internal/usecase/dao"
@@ -56,12 +57,16 @@ func initDAOs() {
 func listenAndServe(cfg *config.Config) {
 	// HTTP Server
 	handler := gin.New()
-	feature := v1.Feature{
+	f := &v1.Feature{
 		Carting: createCartingUseCase(),
 		Order:   createOrderUseCase(),
 		User:    createUserUseCase(),
 	}
-	v1.NewRouter(handler, cfg, comp.log, feature)
+	m := &v1.Middleware{
+		Authentication: createAuthenticationMiddleware(f.User, cfg.Juno.ClientKeyFile),
+		Authorization:  createAuthorizationMiddleware(),
+	}
+	v1.NewRouter(handler, comp.log, f, m)
 	httpServer = httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 }
 
@@ -75,6 +80,14 @@ func createOrderUseCase() usecase.Order {
 
 func createUserUseCase() usecase.User {
 	return usecase.NewUserUseCase(comp.log, userDAO)
+}
+
+func createAuthenticationMiddleware(u usecase.User, f string) middleware.Authentication {
+	return middleware.NewJwtAuthentication(u, comp.log, f)
+}
+
+func createAuthorizationMiddleware() middleware.Authorization {
+	return middleware.NewAbacAuthorization(comp.log)
 }
 
 func waitSignal() {

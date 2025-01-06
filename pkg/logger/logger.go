@@ -97,6 +97,6 @@ func (l *Logger) msg(level string, message interface{}, args ...interface{}) {
 	case string:
 		l.log(msg, args...)
 	default:
-		l.log(fmt.Sprintf("%s message %v has unknown type %v", level, message, msg), args...)
+		l.log(fmt.Sprintf("%s message %v has unknown type %T", level, message, msg), args...)
 	}
 }

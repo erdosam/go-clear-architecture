@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"github.com/arendi-project/ba-version-2/config"
 	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
@@ -15,7 +14,12 @@ type Feature struct {
 	User    usecase.User
 }
 
-func NewRouter(handler *gin.Engine, cfg *config.Config, log logger.Interface, f Feature) {
+type Middleware struct {
+	Authentication middleware.Authentication
+	Authorization  middleware.Authorization
+}
+
+func NewRouter(handler *gin.Engine, log logger.Interface, f *Feature, m *Middleware) {
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger
@@ -27,10 +31,9 @@ func NewRouter(handler *gin.Engine, cfg *config.Config, log logger.Interface, f 
 	// Prometheus metrics
 	// TODO if you need this see https://github.com/evrone/go-clean-template
 
-	v1 := handler.Group("/v1")
+	v1 := handler.Group("/v1", m.Authentication.Authenticate)
 	{
-		middleware.NewJwtAuthentication(v1, f.User, log, cfg.Juno.ClientKeyFile)
-		newCartingRoutes(v1, f.Carting, log)
-		newOrderRoutes(v1, f.Order, log)
+		newCartingRoutes(v1, m.Authorization, f.Carting, log)
+		newOrderRoutes(v1, m.Authorization, f.Order, log)
 	}
 }

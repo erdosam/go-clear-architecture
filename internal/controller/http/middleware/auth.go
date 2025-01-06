@@ -17,18 +17,15 @@ type authMiddleware struct {
 	keyFile string
 }
 
-var auth *authMiddleware
-
-func NewJwtAuthentication(handler *gin.RouterGroup, user usecase.User, log logger.Interface, keyFile string) {
-	auth = &authMiddleware{
+func NewJwtAuthentication(user usecase.User, log logger.Interface, keyFile string) Authentication {
+	return &authMiddleware{
 		log:     log,
 		user:    user,
 		keyFile: keyFile,
 	}
-	handler.Use(jwtAuth)
 }
 
-func jwtAuth(c *gin.Context) {
+func (auth *authMiddleware) Authenticate(c *gin.Context) {
 	tokenString := c.GetHeader("X-Ba-Token")
 	token, err := jwt.ParseWithClaims(tokenString, &entity.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {

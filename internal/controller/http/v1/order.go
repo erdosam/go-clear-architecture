@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,7 @@ type orderRoutes struct {
 	usecase usecase.Order
 }
 
-func newOrderRoutes(handler *gin.RouterGroup, uc usecase.Order, log logger.Interface) {
+func newOrderRoutes(handler *gin.RouterGroup, m middleware.Authorization, uc usecase.Order, log logger.Interface) {
 	route := &orderRoutes{uc}
 	h := handler.Group("/orders")
 	{
@@ -19,7 +20,7 @@ func newOrderRoutes(handler *gin.RouterGroup, uc usecase.Order, log logger.Inter
 	}
 	h = handler.Group("/order")
 	{
-		h.GET("view", route.orderView)
+		h.GET("view", m.Authorize("order", "read"), route.orderView)
 	}
 	log.Info("Done route : order")
 }
