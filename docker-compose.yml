@@ -13,6 +13,7 @@ services:
       - $GOPATH/pkg:/go/pkg
       - $GOPATH/bin:/go/bin
       - .:/go/src/github.com/gilkor/ba-version-2
+      - $PUBLIC_CLIENT_KEY:/etc/juno/key.rsa.pub
     ports:
       - 8034:8080
     depends_on:

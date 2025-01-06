@@ -14,6 +14,6 @@ type JwtPayload struct {
 }
 
 type CustomClaims struct {
-	JwtPayload
 	jwt.StandardClaims
+	JwtPayload
 }
