@@ -16,11 +16,13 @@ func newOrderRoutes(handler *gin.RouterGroup, m middleware.Authorization, uc use
 	route := &orderRoutes{uc}
 	h := handler.Group("/orders")
 	{
-		h.GET("active", route.activeOrders)
+		h.GET("active", m.Authorize("order", "list"), route.activeOrders)
 	}
-	h = handler.Group("/order")
+	g := handler.Group("/order")
 	{
-		h.GET("view", m.Authorize("order", "read"), route.orderView)
+		g.POST("create", m.Authorize("order", "read"), route.orderView)
+		g.GET("view", m.Authorize("order", "read"), route.orderView)
+		g.POST("submit", m.Authorize("order", "read"), route.orderView)
 	}
 	log.Info("Done route : order")
 }

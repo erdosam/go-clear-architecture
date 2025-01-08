@@ -22,7 +22,7 @@ func newCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart
 	{
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
 		h.GET("/items", m.Authorize("item", "read"), route.getItems)
-		h.POST("/add-item", route.addItem)
+		h.POST("/add-item", m.Authorize("item", "write"), route.addItem)
 	}
 	log.Info("Done route : carting")
 }
