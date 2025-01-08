@@ -1,12 +1,69 @@
 @startuml
-'https://plantuml.com/state-diagram
+'skinparam linetype ortho
 
-[*] --> add
-
-state "On cart" as add {
-  [*] --> Idle
-  Idle --> Configuring : EvConfig
-  Configuring --> Idle : EvConfig
+state "Created" as crt {
 }
+state "Pending" as pend {
+    state "PaymentPending" as pay {
+    }
+    state "PaymentFailed" as payFail {
+    }
+    [*] --> pay
+    pay --> payFail: on payment\nfailed
+    pay ---> [*]: on payment\nsuccess
+    payFail --> pay: on try\nagain
+    payFail --> cancel: cancel order
+}
+state "Confirmed" as conf {
+}
+state "InProgress" as prog {
+    state "Scheduled" as sche {
+    }
+    state "DriverAssigned" as driv {
+    }
+    state "EnRoute" as enrut {
+    }
+    [*] --> sche: create schedule
+    sche --> driv: assign driver
+    driv --> enrut: on driver headed
+    enrut --> [*]
+}
+state "Completed" as comp {
+}
+state "Cancelled" as cancel {
+}
+
+'optional
+state "Failed" as fail {
+}
+state "Disputed" as disp {
+}
+state "Rescheduled" as resc {
+}
+state "Refunded" as refu {
+}
+'recurring states
+state "Active" as acti {
+}
+state "Paused" as paus {
+}
+state "Expired" as expi {
+}
+state "Renewed" as renew {
+}
+
+[*] --> crt: create order
+crt --> pend: on checked out
+
+pend --> conf: on partner\naccepted
+pend --> cancel: cancel order
+
+conf --> prog
+prog --> comp: on partner dumped
+comp --> [*]
+cancel --> [*]
+
+'dispute
+prog --> fail
 
 @enduml
