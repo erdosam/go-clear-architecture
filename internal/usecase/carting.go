@@ -6,6 +6,8 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 )
 
+var _ Carting = &cartingUseCase{}
+
 type cartingUseCase struct {
 	dao repo.CartingDAO
 	log logger.Interface

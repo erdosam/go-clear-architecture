@@ -6,12 +6,14 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 )
 
+var _ User = &userUseCase{}
+
 type userUseCase struct {
 	userDAO repo.UserDAO
 	log     logger.Interface
 }
 
-func NewUserUseCase(l logger.Interface, dao repo.UserDAO) *userUseCase {
+func NewUserUseCase(l logger.Interface, dao repo.UserDAO) User {
 	return &userUseCase{
 		userDAO: dao,
 		log:     l,

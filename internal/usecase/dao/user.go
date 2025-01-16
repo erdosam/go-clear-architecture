@@ -6,12 +6,14 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
 )
 
+var _ UserDAO = &userDAO{}
+
 type userDAO struct {
 	*postgres.Postgres
 	log logger.Interface
 }
 
-func NewUserDAO(l logger.Interface, pg *postgres.Postgres) *userDAO {
+func NewUserDAO(l logger.Interface, pg *postgres.Postgres) UserDAO {
 	return &userDAO{pg, l}
 }
 

@@ -6,12 +6,14 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
 )
 
+var _ CartingDAO = &cartingDAO{}
+
 type cartingDAO struct {
 	*postgres.Postgres
 	log logger.Interface
 }
 
-func NewCartingDAO(log logger.Interface, pg *postgres.Postgres) *cartingDAO {
+func NewCartingDAO(log logger.Interface, pg *postgres.Postgres) CartingDAO {
 	return &cartingDAO{pg, log}
 }
 

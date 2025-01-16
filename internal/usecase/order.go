@@ -6,6 +6,8 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 )
 
+var _ Order = &orderUseCase{}
+
 type orderUseCase struct {
 	cartingDAO repo.CartingDAO
 	orderDAO   repo.OrderDAO
@@ -20,11 +22,11 @@ func NewOrderUseCase(l logger.Interface, od repo.OrderDAO, cd repo.CartingDAO) O
 	}
 }
 
-func (o orderUseCase) CreateMultipleItemsOrder([]entity.CartItem) (entity.Order, error) {
+func (o *orderUseCase) CreateMultipleItemsOrder([]entity.CartItem) (entity.Order, error) {
 	return entity.Order{}, nil
 }
 
-func (o orderUseCase) GetOrderById(id string) (entity.Order, error) {
+func (o *orderUseCase) GetOrderById(id string) (entity.Order, error) {
 	o.log.Info(id)
 	return entity.Order{}, nil
 }
