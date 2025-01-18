@@ -43,14 +43,14 @@ func (auth *authMiddleware) Authenticate(c *gin.Context) {
 	}
 	// Set the token claims to the context
 	if claims, ok := token.Claims.(*entity.CustomClaims); ok && token.Valid {
-		auth.log.Debug(claims.AccountId)
-		_, err := auth.user.GetUserById(claims.AccountId)
+		auth.log.Debug("Account Id: %s", claims.AccountId)
+		user, err := auth.user.GetUserById(claims.AccountId)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization"})
 			c.Abort()
 			return
 		}
-		c.Set("identity", claims)
+		c.Set("identity", user)
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		c.Abort()
