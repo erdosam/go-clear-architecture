@@ -19,7 +19,7 @@ type Middleware struct {
 	Authorization  middleware.Authorization
 }
 
-func NewRouter(handler *gin.Engine, log logger.Interface, f *Feature, m *Middleware) {
+func InitRouter(handler *gin.Engine, log logger.Interface, f *Feature, m *Middleware) {
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger

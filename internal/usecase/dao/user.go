@@ -22,6 +22,6 @@ func (u *userDAO) FindUserById(id string) (entity.User, error) {
 	if id == "" {
 		return entity.User{}, errors.New("empty user")
 	}
-	u.log.Debug("Finding user", id)
+	u.log.Debug("Finding user with id %s", id)
 	return entity.User{Id: id}, nil
 }
