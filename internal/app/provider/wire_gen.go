@@ -128,11 +128,13 @@ var (
 	middlewareSet = wire.NewSet(
 		newAuthenticationMiddleware,
 		newAuthorizationMiddleware,
+		provideMiddlewares,
 	)
 	featureSet = wire.NewSet(
 		newCartingUseCase,
 		newOrderUseCase,
 		newUserUseCase,
+		provideFeatures,
 	)
 )
 

@@ -37,7 +37,7 @@ type singletons struct {
 var (
 	s singletons
 	// component dependencies
-	commonSet = wire.NewSet(ProvideConfig, provideSingletonLogger, provideSingletonRepository)
+	commonSet = wire.NewSet(provideConfig, provideSingletonLogger, provideSingletonRepository)
 	daoSet    = wire.NewSet(
 		newSingletonCartingDAO,
 		newSingletonOrderDAO,
@@ -46,21 +46,23 @@ var (
 	middlewareSet = wire.NewSet(
 		newAuthenticationMiddleware,
 		newAuthorizationMiddleware,
+		provideMiddlewares,
 	)
 	featureSet = wire.NewSet(
 		newCartingUseCase,
 		newOrderUseCase,
 		newUserUseCase,
+		provideFeatures,
 	)
 )
 
 func NewRepo() *postgres.Postgres {
-	wire.Build(ProvideConfig, NewLogger, provideSingletonRepository)
+	wire.Build(provideConfig, NewLogger, provideSingletonRepository)
 	return nil
 }
 
 func NewLogger() logger.Interface {
-	wire.Build(ProvideConfig, provideSingletonLogger)
+	wire.Build(provideConfig, provideSingletonLogger)
 	return nil
 }
 
@@ -68,8 +70,6 @@ func NewHttpServer() *httpserver.Server {
 	wire.Build(
 		httpserver.New,
 		v1.NewRouterHandler,
-		provideFeatures,
-		provideMiddlewares,
 		provideServerOptions,
 		commonSet,
 		featureSet,
@@ -124,7 +124,7 @@ func newUserUseCase() usecase.User {
 	return nil
 }
 
-func ProvideConfig() *config.Config {
+func provideConfig() *config.Config {
 	s.once.config.Do(func() {
 		conf, err := config.NewConfig()
 		if err != nil {
