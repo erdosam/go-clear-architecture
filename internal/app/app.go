@@ -2,47 +2,29 @@ package app
 
 import (
 	"fmt"
-	"github.com/arendi-project/ba-version-2/config"
-	v1 "github.com/arendi-project/ba-version-2/internal/controller/http/v1"
+	"github.com/arendi-project/ba-version-2/internal/app/provider"
 	"github.com/arendi-project/ba-version-2/pkg/httpserver"
-	"github.com/arendi-project/ba-version-2/pkg/logger"
-	"github.com/gin-gonic/gin"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var (
-	logService logger.Interface
-)
-
-func Run(cfg *config.Config) {
-	logService = newLogger()
-	db := newRepo()
+func Run() {
+	db := provider.NewRepo()
 	defer db.Disconnect()
 
-	listenAndServe(cfg)
+	listenAndServe()
 }
 
-func listenAndServe(cfg *config.Config) {
+func listenAndServe() {
 	// HTTP Server
-	handler := gin.New()
-	f := &v1.Feature{
-		Carting: newCartingUseCase(),
-		Order:   newOrderUseCase(),
-		User:    newUserUseCase(),
-	}
-	m := &v1.Middleware{
-		Authentication: newAuthenticationMiddleware(),
-		Authorization:  newAuthorizationMiddleware(),
-	}
-	v1.InitRouter(handler, logService, f, m)
-	hs := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
+	hs := provider.NewHttpServer()
 	waitSignal(hs)
 }
 
 func waitSignal(httpServer *httpserver.Server) {
 	var err error
+	logService := provider.NewLogger()
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)

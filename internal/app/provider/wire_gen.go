@@ -4,14 +4,16 @@
 //go:build !wireinject
 // +build !wireinject
 
-package app
+package provider
 
 import (
 	"fmt"
 	"github.com/arendi-project/ba-version-2/config"
 	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
+	"github.com/arendi-project/ba-version-2/internal/controller/http/v1"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/internal/usecase/dao"
+	"github.com/arendi-project/ba-version-2/pkg/httpserver"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
 	"github.com/google/wire"
@@ -21,22 +23,38 @@ import (
 
 // Injectors from wire.go:
 
-func newRepo() *postgres.Postgres {
-	config := provideConfig()
-	loggerInterface := newLogger()
+func NewRepo() *postgres.Postgres {
+	config := ProvideConfig()
+	loggerInterface := NewLogger()
 	postgresPostgres := provideSingletonRepository(config, loggerInterface)
 	return postgresPostgres
 }
 
-func newLogger() logger.Interface {
-	config := provideConfig()
+func NewLogger() logger.Interface {
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	return loggerInterface
 }
 
+func NewHttpServer() *httpserver.Server {
+	config := ProvideConfig()
+	loggerInterface := provideSingletonLogger(config)
+	carting := newCartingUseCase()
+	order := newOrderUseCase()
+	user := newUserUseCase()
+	feature := provideFeatures(carting, order, user)
+	authentication := newAuthenticationMiddleware()
+	authorization := newAuthorizationMiddleware()
+	middleware := provideMiddlewares(authentication, authorization)
+	handler := v1.NewRouterHandler(loggerInterface, feature, middleware)
+	v := provideServerOptions(config)
+	server := httpserver.New(handler, v...)
+	return server
+}
+
 func newAuthenticationMiddleware() middleware.Authentication {
 	user := newUserUseCase()
-	config := provideConfig()
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	juno := provideJunoConfig(config)
 	string2 := juno.ClientKeyFile
@@ -45,14 +63,14 @@ func newAuthenticationMiddleware() middleware.Authentication {
 }
 
 func newAuthorizationMiddleware() middleware.Authorization {
-	config := provideConfig()
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	authorization := middleware.NewAbacAuthorization(loggerInterface)
 	return authorization
 }
 
 func newCartingUseCase() usecase.Carting {
-	config := provideConfig()
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	postgresPostgres := provideSingletonRepository(config, loggerInterface)
 	cartingDAO := newSingletonCartingDAO(loggerInterface, postgresPostgres)
@@ -61,7 +79,7 @@ func newCartingUseCase() usecase.Carting {
 }
 
 func newOrderUseCase() usecase.Order {
-	config := provideConfig()
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	postgresPostgres := provideSingletonRepository(config, loggerInterface)
 	orderDAO := newSingletonOrderDAO(loggerInterface, postgresPostgres)
@@ -71,7 +89,7 @@ func newOrderUseCase() usecase.Order {
 }
 
 func newUserUseCase() usecase.User {
-	config := provideConfig()
+	config := ProvideConfig()
 	loggerInterface := provideSingletonLogger(config)
 	postgresPostgres := provideSingletonRepository(config, loggerInterface)
 	userDAO := newSingletonUserDAO(loggerInterface, postgresPostgres)
@@ -82,12 +100,14 @@ func newUserUseCase() usecase.User {
 // wire.go:
 
 type singletons struct {
+	config     *config.Config
 	log        logger.Interface
 	db         *postgres.Postgres
 	cartingDAO dao.CartingDAO
 	orderDAO   dao.OrderDAO
 	userDAO    dao.UserDAO
 	once       struct {
+		config     sync.Once
 		log        sync.Once
 		db         sync.Once
 		cartingDAO sync.Once
@@ -99,20 +119,47 @@ type singletons struct {
 var (
 	s singletons
 	// component dependencies
-	commonSet = wire.NewSet(provideConfig, provideSingletonLogger, provideSingletonRepository)
+	commonSet = wire.NewSet(ProvideConfig, provideSingletonLogger, provideSingletonRepository)
 	daoSet    = wire.NewSet(
 		newSingletonCartingDAO,
 		newSingletonOrderDAO,
 		newSingletonUserDAO,
 	)
+	middlewareSet = wire.NewSet(
+		newAuthenticationMiddleware,
+		newAuthorizationMiddleware,
+	)
+	featureSet = wire.NewSet(
+		newCartingUseCase,
+		newOrderUseCase,
+		newUserUseCase,
+	)
 )
 
-func provideConfig() *config.Config {
-	conf, err := config.NewConfig()
-	if err != nil {
-		log.Fatalf("Config error: %s", err)
+func provideFeatures(c usecase.Carting, o usecase.Order, u usecase.User) *v1.Feature {
+	return &v1.Feature{
+		Carting: c,
+		Order:   o,
+		User:    u,
 	}
-	return conf
+}
+
+func provideMiddlewares(a1 middleware.Authentication, a2 middleware.Authorization) *v1.Middleware {
+	return &v1.Middleware{
+		Authentication: a1,
+		Authorization:  a2,
+	}
+}
+
+func ProvideConfig() *config.Config {
+	s.once.config.Do(func() {
+		conf, err := config.NewConfig()
+		if err != nil {
+			log.Fatalf("Config error: %s", err)
+		}
+		s.config = conf
+	})
+	return s.config
 }
 
 func provideSingletonLogger(cfg *config.Config) logger.Interface {
@@ -135,6 +182,10 @@ func provideSingletonRepository(cfg *config.Config, l logger.Interface) *postgre
 
 func provideJunoConfig(cfg *config.Config) config.Juno {
 	return cfg.Juno
+}
+
+func provideServerOptions(cfg *config.Config) []httpserver.Option {
+	return []httpserver.Option{httpserver.Port(cfg.HTTP.Port)}
 }
 
 func newSingletonCartingDAO(l logger.Interface, pg *postgres.Postgres) dao.CartingDAO {

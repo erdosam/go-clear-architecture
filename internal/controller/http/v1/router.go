@@ -19,7 +19,8 @@ type Middleware struct {
 	Authorization  middleware.Authorization
 }
 
-func InitRouter(handler *gin.Engine, log logger.Interface, f *Feature, m *Middleware) {
+func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Handler {
+	handler := gin.New()
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger
@@ -36,4 +37,5 @@ func InitRouter(handler *gin.Engine, log logger.Interface, f *Feature, m *Middle
 		newCartingRoutes(v1, m.Authorization, f.Carting, log)
 		newOrderRoutes(v1, m.Authorization, f.Order, log)
 	}
+	return handler
 }
