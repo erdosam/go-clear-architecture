@@ -6,7 +6,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GOPATH: /go/
       GIN_MODE: debug
-      PG_URL: 'postgres://user:pass@postgres:5432/buangin?sslmode=disable'
+      PG_URL: $PG_URL
     working_dir: "/go/src/github.com/gilkor/ba-version-2/"
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
@@ -38,12 +38,12 @@ services:
 
   app:
     build: .
-    image: app
+    image: ba-version-2
     environment:
-      PG_URL: 'postgres://user:pass@postgres:5432/buangin'
-      RMQ_URL: 'amqp://guest:guest@rabbitmq:5672/'
+      PG_URL: $PG_URL
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GIN_MODE: release
+      GOPATH: /go/
     ports:
       - 8045:8080
     depends_on:
@@ -51,6 +51,7 @@ services:
       - rabbitmq
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+      - ./config/config.yml:/usr/local/bin/config/config.yml
 
   integration:
     build:

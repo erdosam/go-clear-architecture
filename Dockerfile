@@ -1,12 +1,14 @@
 ARG GO_VERSION=1.23-alpine
-ARG APP_PATH=$GOPATH/src/github.com/gilkor/ba-version-2/
+# cache module
+FROM golang:$GO_VERSION as modules
+COPY go.mod go.sum /modules/
+WORKDIR /modules
+RUN go mod download
 
 FROM golang:$GO_VERSION as builder
-# cache module
-WORKDIR $APP_PATH
-COPY ./go.* .
-RUN go mod download
+COPY --from=modules /go/pkg $GOPATH/pkg
 # non cache
+WORKDIR /app
 COPY . .
 RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \

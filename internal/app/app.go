@@ -46,9 +46,10 @@ func waitSignal(httpServer *httpserver.Server) {
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	// don't work on dev (run with "go run ./cmd/app"
 	select {
 	case s := <-interrupt:
-		logService.Info("app - Run - signal: %s" + s.String())
+		logService.Info("app - Run - signal: " + s.String())
 	case err = <-httpServer.Notify():
 		logService.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
 	}
