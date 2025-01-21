@@ -99,6 +99,6 @@ func (l *logger) log(e *zerolog.Event, m string, args ...interface{}) {
 	if len(args) == 0 {
 		e.Msg(m)
 	} else {
-		e.Msgf(m, args)
+		e.Msgf(m, args...)
 	}
 }
