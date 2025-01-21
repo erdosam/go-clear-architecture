@@ -52,6 +52,7 @@ services:
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
       - ./config/config.yml:/usr/local/bin/config/config.yml
+      - $PUBLIC_CLIENT_KEY:/etc/juno/key.rsa.pub
 
   integration:
     build:
