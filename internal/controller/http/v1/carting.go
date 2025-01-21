@@ -32,7 +32,7 @@ func (r *cartingRoutes) getCartItems(c *gin.Context) {
 	cart, _ := r.usecase.GetCart(getIdentity(c))
 	items, err := r.usecase.GetItems(cart)
 	if err != nil {
-		c.JSON(http.StatusNotFound, err)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, entity.CartItemResponse{Items: items})
@@ -43,7 +43,7 @@ func (r *cartingRoutes) getCartItem(c *gin.Context) {
 	id := c.Param("id")
 	item, err := r.usecase.GetItem(cart, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, item)
