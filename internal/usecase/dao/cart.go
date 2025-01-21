@@ -22,8 +22,7 @@ func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)
 	q := dao.Rebind(`SELECT * FROM public.cart_item WHERE user_id = ?`)
 	err := dao.Select(&rows, q, c.UserId)
 	if err != nil {
-		dao.log.Error(err)
-		return nil, err
+		panic(err.(any))
 	}
 	dao.log.Debug("User %s's items count %d", c.UserId, len(rows))
 	return rows, nil
