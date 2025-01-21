@@ -27,3 +27,16 @@ func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)
 	dao.log.Debug("User %s's items count %d", c.UserId, len(rows))
 	return rows, nil
 }
+
+func (dao *cartingDAO) FindOneItem(arg ...interface{}) (entity.CartItem, error) {
+	var item entity.CartItem
+	query, args := buildFindQuery(`SELECT * FROM public.cart_item`, arg...)
+	q := dao.Rebind(query)
+	if err := dao.Get(&item, q, args...); err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return entity.CartItem{}, err
+		}
+		panic(err.(any))
+	}
+	return item, nil
+}

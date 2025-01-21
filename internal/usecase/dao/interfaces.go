@@ -8,6 +8,7 @@ type (
 	}
 	CartingDAO interface {
 		FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)
+		FindOneItem(arg ...interface{}) (entity.CartItem, error)
 	}
 	OrderDAO interface {
 		FindOrderById(id string) (entity.Order, error)

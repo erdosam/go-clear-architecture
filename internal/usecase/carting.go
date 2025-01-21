@@ -29,6 +29,15 @@ func (us *cartingUseCase) GetItems(c entity.Cart) ([]entity.CartItem, error) {
 	return items, nil
 }
 
+func (us *cartingUseCase) GetItem(c entity.Cart, id string) (entity.CartItem, error) {
+	item, err := us.dao.FindOneItem("id", id, "user_id", c.UserId)
+	if err != nil {
+		us.log.Error(err)
+		return entity.CartItem{}, err
+	}
+	return item, nil
+}
+
 func (us *cartingUseCase) AddItemToCart(i entity.CartItem, c entity.Cart) error {
 	return nil
 }
