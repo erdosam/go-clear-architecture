@@ -2,7 +2,8 @@ package entity
 
 type (
 	User struct {
-		Id string `db:"id" json:"id"`
+		Id   string `db:"id" json:"id"`
+		Name string `db:"name"`
 	}
 	// UserAccount will be like juno's account structure
 	UserAccount struct {
