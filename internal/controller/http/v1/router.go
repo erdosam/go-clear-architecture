@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
+	"github.com/arendi-project/ba-version-2/internal/entity"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -38,4 +39,9 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 		newOrderRoutes(v1, m.Authorization, f.Order, log)
 	}
 	return handler
+}
+
+func getIdentity(c *gin.Context) entity.User {
+	user, _ := c.Get("identity")
+	return user.(entity.User)
 }

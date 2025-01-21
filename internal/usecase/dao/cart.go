@@ -25,6 +25,6 @@ func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)
 		dao.log.Error(err)
 		return nil, err
 	}
-	dao.log.Debug("Items count %d", len(rows))
+	dao.log.Debug("User %s's items count %d", c.UserId, len(rows))
 	return rows, nil
 }

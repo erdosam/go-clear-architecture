@@ -21,14 +21,14 @@ func newCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart
 	h := handler.Group("/cart")
 	{
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
-		h.GET("/items", m.Authorize("item", "read"), route.getItems)
-		h.POST("/add-item", m.Authorize("item", "write"), route.addItem)
+		h.GET("/items", m.Authorize("item", "read"), route.getCartItems)
+		h.POST("/add-item", m.Authorize("item", "write"), route.addItemToCart)
 	}
 	log.Info("Done route : carting")
 }
 
-func (r *cartingRoutes) getItems(c *gin.Context) {
-	cart := entity.Cart{UserId: c.Query("user_id")}
+func (r *cartingRoutes) getCartItems(c *gin.Context) {
+	cart, _ := r.usecase.GetCart(getIdentity(c))
 	items, err := r.usecase.GetItems(cart)
 	if err != nil {
 		c.JSON(http.StatusNotFound, err)
@@ -37,6 +37,6 @@ func (r *cartingRoutes) getItems(c *gin.Context) {
 	c.JSON(http.StatusOK, entity.CartItemResponse{Items: items})
 }
 
-func (r *cartingRoutes) addItem(c *gin.Context) {
+func (r *cartingRoutes) addItemToCart(c *gin.Context) {
 
 }

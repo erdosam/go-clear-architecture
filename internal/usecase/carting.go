@@ -32,3 +32,7 @@ func (us *cartingUseCase) GetItems(c entity.Cart) ([]entity.CartItem, error) {
 func (us *cartingUseCase) AddItemToCart(i entity.CartItem, c entity.Cart) error {
 	return nil
 }
+
+func (us *cartingUseCase) GetCart(u entity.User) (entity.Cart, error) {
+	return entity.Cart{UserId: u.Id}, nil
+}

@@ -23,6 +23,7 @@ func NewUserUseCase(l logger.Interface, dao repo.UserDAO) User {
 func (u *userUseCase) GetUserById(id string) (entity.User, error) {
 	user, err := u.userDAO.FindUserById(id)
 	if err != nil {
+		u.log.Error(err)
 		return entity.User{}, err
 	}
 	return user, nil
