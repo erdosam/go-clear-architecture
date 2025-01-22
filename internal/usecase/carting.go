@@ -1,9 +1,11 @@
 package usecase
 
 import (
+	"errors"
 	"github.com/arendi-project/ba-version-2/internal/entity"
 	repo "github.com/arendi-project/ba-version-2/internal/usecase/dao"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
+	"github.com/go-playground/validator/v10"
 )
 
 var _ Carting = &cartingUseCase{}
@@ -11,12 +13,14 @@ var _ Carting = &cartingUseCase{}
 type cartingUseCase struct {
 	dao repo.CartingDAO
 	log logger.Interface
+	val *validator.Validate
 }
 
-func NewCartingUseCase(l logger.Interface, d repo.CartingDAO) Carting {
+func NewCartingUseCase(l logger.Interface, d repo.CartingDAO, v *validator.Validate) Carting {
 	return &cartingUseCase{
 		dao: d,
 		log: l,
+		val: v,
 	}
 }
 
@@ -38,7 +42,12 @@ func (us *cartingUseCase) GetItem(c entity.Cart, id string) (entity.CartItem, er
 	return item, nil
 }
 
-func (us *cartingUseCase) AddItemToCart(i entity.CartItem, c entity.Cart) error {
+func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartRequest) error {
+	err := us.val.Struct(req)
+	if err != nil {
+		us.log.Info("Error validating add item %s", err)
+		return errors.New("validation failed")
+	}
 	return nil
 }
 

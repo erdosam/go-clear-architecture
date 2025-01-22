@@ -6,6 +6,7 @@ import (
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"net/http"
 )
 
@@ -50,5 +51,15 @@ func (r *cartingRoutes) getCartItem(c *gin.Context) {
 }
 
 func (r *cartingRoutes) addItemToCart(c *gin.Context) {
-
+	var body entity.AddItemToCartRequest
+	err := c.MustBindWith(&body, binding.JSON)
+	if err != nil {
+		return
+	}
+	err = r.usecase.AddItemToCart(body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, "")
 }

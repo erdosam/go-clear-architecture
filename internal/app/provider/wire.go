@@ -12,6 +12,7 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/httpserver"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
 	"log"
 	"sync"
@@ -41,6 +42,7 @@ var (
 		provideSingletonConfig,
 		provideSingletonLogger,
 		provideSingletonRepository,
+		provideValidator,
 	)
 	daoSet = wire.NewSet(
 		newSingletonCartingDAO,
@@ -95,6 +97,10 @@ func provideMiddlewares(a1 middleware.Authentication, a2 middleware.Authorizatio
 		Authentication: a1,
 		Authorization:  a2,
 	}
+}
+
+func provideValidator() *validator.Validate {
+	return validator.New(validator.WithRequiredStructEnabled())
 }
 
 func newAuthenticationMiddleware() middleware.Authentication {

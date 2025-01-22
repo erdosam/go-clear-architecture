@@ -16,7 +16,7 @@ type (
 		GetCart(u entity.User) (entity.Cart, error)
 		GetItems(c entity.Cart) ([]entity.CartItem, error)
 		GetItem(c entity.Cart, id string) (entity.CartItem, error)
-		AddItemToCart(i entity.CartItem, c entity.Cart) error
+		AddItemToCart(req entity.AddItemToCartRequest) error
 	}
 	Order interface {
 		CreateMultipleItemsOrder(i []entity.CartItem) (entity.Order, error)
