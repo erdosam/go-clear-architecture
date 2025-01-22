@@ -12,7 +12,7 @@ type orderRoutes struct {
 	usecase usecase.Order
 }
 
-func newOrderRoutes(handler *gin.RouterGroup, m middleware.Authorization, uc usecase.Order, log logger.Interface) {
+func initOrderRoutes(handler *gin.RouterGroup, m middleware.Authorization, uc usecase.Order, log logger.Interface) {
 	route := &orderRoutes{uc}
 	h := handler.Group("/orders")
 	{

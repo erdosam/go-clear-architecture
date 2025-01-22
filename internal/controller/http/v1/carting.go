@@ -14,7 +14,7 @@ type cartingRoutes struct {
 	log     logger.Interface
 }
 
-func newCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart usecase.Carting, log logger.Interface) {
+func initCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart usecase.Carting, log logger.Interface) {
 	route := &cartingRoutes{
 		usecase: cart,
 		log:     log,
@@ -52,11 +52,8 @@ func (r *cartingRoutes) getCartItem(c *gin.Context) {
 }
 
 func (r *cartingRoutes) addItemToCart(c *gin.Context) {
-	var body entity.AddItemToCartRequest
-	err := c.ShouldBindJSON(&body)
+	var body, err = shouldBindJSON[entity.AddItemToCartRequest](c)
 	if err != nil {
-		r.log.Debug(err)
-		c.JSON(http.StatusPreconditionFailed, gin.H{"error": "Invalid json type"})
 		return
 	}
 	err = r.usecase.AddItemToCart(body)
