@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"errors"
 	"github.com/arendi-project/ba-version-2/internal/entity"
 	repo "github.com/arendi-project/ba-version-2/internal/usecase/dao"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
@@ -43,10 +42,9 @@ func (us *cartingUseCase) GetItem(c entity.Cart, id string) (entity.CartItem, er
 }
 
 func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartRequest) error {
-	err := us.val.Struct(req)
-	if err != nil {
+	if err := req.Validate(req, us.val); err != nil {
 		us.log.Info("Error validating add item %s", err)
-		return errors.New("validation failed")
+		return err
 	}
 	return nil
 }

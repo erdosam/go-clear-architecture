@@ -6,17 +6,18 @@ import (
 	"github.com/arendi-project/ba-version-2/internal/usecase"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"net/http"
 )
 
 type cartingRoutes struct {
 	usecase usecase.Carting
+	log     logger.Interface
 }
 
 func newCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart usecase.Carting, log logger.Interface) {
 	route := &cartingRoutes{
 		usecase: cart,
+		log:     log,
 	}
 
 	h := handler.Group("/cart")
@@ -52,8 +53,10 @@ func (r *cartingRoutes) getCartItem(c *gin.Context) {
 
 func (r *cartingRoutes) addItemToCart(c *gin.Context) {
 	var body entity.AddItemToCartRequest
-	err := c.MustBindWith(&body, binding.JSON)
+	err := c.ShouldBindJSON(&body)
 	if err != nil {
+		r.log.Debug(err)
+		c.JSON(http.StatusPreconditionFailed, gin.H{"error": "Invalid json type"})
 		return
 	}
 	err = r.usecase.AddItemToCart(body)
