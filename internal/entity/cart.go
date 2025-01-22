@@ -1,5 +1,9 @@
 package entity
 
+import "github.com/go-playground/validator/v10"
+
+var _ baseFormRequest = &AddItemToCartRequest{}
+
 type (
 	Cart struct {
 		UserId string `json:"id"`
@@ -13,7 +17,6 @@ type (
 		Blamable
 	}
 	AddItemToCartRequest struct {
-		baseFormRequest[AddItemToCartRequest]
 		ItemId string `json:"item_id" validate:"required" error-required:"Item id is required"`
 		CartId string `json:"cart_id" validate:"required" error-required:"Cart id is required"`
 		Amount int    `json:"amount" validate:"required,gte=2000" error-required:"Field amount is required" error-gte:"Amount must be greater than 2000"`
@@ -22,3 +25,7 @@ type (
 		Items []CartItem `json:"items"`
 	}
 )
+
+func (m *AddItemToCartRequest) Validate(v *validator.Validate) error {
+	return validateFunc[AddItemToCartRequest](*m, v)
+}

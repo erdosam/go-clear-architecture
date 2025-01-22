@@ -10,12 +10,8 @@ import (
 
 const errorMessageTag = "error-"
 
-type (
-	baseFormRequest[T any] struct{}
-)
-
-func (b *baseFormRequest[T]) Validate(obj any, v *validator.Validate) error {
-	return validateFunc[T](obj, v)
+type baseFormRequest interface {
+	Validate(v *validator.Validate) error
 }
 
 func validateFunc[T interface{}](obj interface{}, validate *validator.Validate) (errs error) {

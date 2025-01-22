@@ -35,8 +35,8 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 
 	v1 := handler.Group("/v1", m.Authentication.Authenticate)
 	{
-		newCartingRoutes(v1, m.Authorization, f.Carting, log)
-		newOrderRoutes(v1, m.Authorization, f.Order, log)
+		initCartingRoutes(v1, m.Authorization, f.Carting, log)
+		initOrderRoutes(v1, m.Authorization, f.Order, log)
 	}
 	return handler
 }
@@ -44,4 +44,13 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 func getIdentity(c *gin.Context) entity.User {
 	user, _ := c.Get("identity")
 	return user.(entity.User)
+}
+
+func shouldBindJSON[T any](c *gin.Context) (T, error) {
+	var body T
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusPreconditionFailed, gin.H{"error": "Invalid json type"})
+	}
+	return body, err
 }

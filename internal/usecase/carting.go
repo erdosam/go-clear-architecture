@@ -42,10 +42,11 @@ func (us *cartingUseCase) GetItem(c entity.Cart, id string) (entity.CartItem, er
 }
 
 func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartRequest) error {
-	if err := req.Validate(req, us.val); err != nil {
+	if err := req.Validate(us.val); err != nil {
 		us.log.Info("Error validating add item %s", err)
 		return err
 	}
+	//TODO the logic of adding item to cart
 	return nil
 }
 
