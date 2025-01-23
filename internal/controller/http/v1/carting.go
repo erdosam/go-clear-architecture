@@ -1,33 +1,28 @@
 package v1
 
 import (
-	"github.com/arendi-project/ba-version-2/internal/controller/http/middleware"
 	"github.com/arendi-project/ba-version-2/internal/entity"
 	"github.com/arendi-project/ba-version-2/internal/usecase"
-	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type cartingRoutes struct {
 	usecase usecase.Carting
-	log     logger.Interface
 }
 
-func initCartingRoutes(handler *gin.RouterGroup, m middleware.Authorization, cart usecase.Carting, log logger.Interface) {
+func (rh *routerHandler) initCartingRoutes(parent *gin.RouterGroup) {
 	route := &cartingRoutes{
-		usecase: cart,
-		log:     log,
+		usecase: rh.feature.Carting,
 	}
-
-	h := handler.Group("/cart")
+	h := parent.Group("/cart")
 	{
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
-		h.GET("/items", m.Authorize("item", "read"), route.getCartItems)
-		h.GET("/item/:id", m.Authorize("item", "read"), route.getCartItem)
-		h.POST("/add-item", m.Authorize("item", "write"), route.addItemToCart)
+		h.GET("/items", rh.access.Authorize("item", "read"), route.getCartItems)
+		h.GET("/item/:id", rh.access.Authorize("item", "read"), route.getCartItem)
+		h.POST("/add-item", rh.access.Authorize("item", "write"), route.addItemToCart)
 	}
-	log.Info("Done route : carting")
+	rh.log.Info("Done route : carting")
 }
 
 func (r *cartingRoutes) getCartItems(c *gin.Context) {

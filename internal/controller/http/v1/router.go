@@ -20,8 +20,20 @@ type Middleware struct {
 	Authorization  middleware.Authorization
 }
 
+type routerHandler struct {
+	*gin.Engine
+	log     logger.Interface
+	feature *Feature
+	access  middleware.Authorization
+}
+
 func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Handler {
-	handler := gin.New()
+	handler := &routerHandler{
+		gin.New(),
+		log,
+		f,
+		m.Authorization,
+	}
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger
@@ -35,8 +47,8 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 
 	v1 := handler.Group("/v1", m.Authentication.Authenticate)
 	{
-		initCartingRoutes(v1, m.Authorization, f.Carting, log)
-		initOrderRoutes(v1, m.Authorization, f.Order, log)
+		handler.initCartingRoutes(v1)
+		handler.initOrderRoutes(v1)
 	}
 	return handler
 }
@@ -50,7 +62,7 @@ func shouldBindJSON[T any](c *gin.Context) (T, error) {
 	var body T
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusPreconditionFailed, gin.H{"error": "Invalid json type"})
+		c.AbortWithStatusJSON(http.StatusPreconditionFailed, gin.H{"error": "Invalid in type a json field"})
 	}
 	return body, err
 }
