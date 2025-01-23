@@ -41,7 +41,11 @@ func (us *cartingUseCase) GetItem(c entity.Cart, id string) (entity.CartItem, er
 	return item, nil
 }
 
-func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartRequest) error {
+func (us *cartingUseCase) GetCart(u entity.User) (entity.Cart, error) {
+	return entity.Cart{UserId: u.Id}, nil
+}
+
+func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartForm) error {
 	if err := req.Validate(us.val); err != nil {
 		us.log.Info("Error validating add item %s", err)
 		return err
@@ -50,6 +54,11 @@ func (us *cartingUseCase) AddItemToCart(req entity.AddItemToCartRequest) error {
 	return nil
 }
 
-func (us *cartingUseCase) GetCart(u entity.User) (entity.Cart, error) {
-	return entity.Cart{UserId: u.Id}, nil
+func (us *cartingUseCase) EditCartItem(req entity.EditCartItemForm) error {
+	if err := req.Validate(us.val); err != nil {
+		us.log.Info("Error validating edit item %s", err)
+		return err
+	}
+	//TODO the logic of editing cart item
+	return nil
 }

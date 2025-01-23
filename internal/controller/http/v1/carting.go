@@ -20,7 +20,8 @@ func (rh *routerHandler) initCartingRoutes(parent *gin.RouterGroup) {
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
 		h.GET("/items", rh.access.Authorize("item", "read"), route.getCartItems)
 		h.GET("/item/:id", rh.access.Authorize("item", "read"), route.getCartItem)
-		h.POST("/add-item", rh.access.Authorize("item", "write"), route.addItemToCart)
+		h.POST("/item/add", rh.access.Authorize("item", "write"), route.addItemToCart)
+		h.POST("/item/edit/:id", rh.access.Authorize("item", "write"), route.editCartItem)
 	}
 	rh.log.Info("Done route : carting")
 }
@@ -47,11 +48,24 @@ func (r *cartingRoutes) getCartItem(c *gin.Context) {
 }
 
 func (r *cartingRoutes) addItemToCart(c *gin.Context) {
-	var body, err = shouldBindJSON[entity.AddItemToCartRequest](c)
+	var body, err = shouldBindJSON[entity.AddItemToCartForm](c)
 	if err != nil {
 		return
 	}
 	err = r.usecase.AddItemToCart(body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, "")
+}
+
+func (r *cartingRoutes) editCartItem(c *gin.Context) {
+	var body, err = shouldBindJSON[entity.EditCartItemForm](c)
+	if err != nil {
+		return
+	}
+	err = r.usecase.EditCartItem(body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
