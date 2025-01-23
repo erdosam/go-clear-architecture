@@ -17,9 +17,8 @@ type (
 		Blamable
 	}
 	AddItemToCartRequest struct {
-		ItemId string `json:"item_id" validate:"required" error-required:"Item id is required"`
-		CartId string `json:"cart_id" validate:"required" error-required:"Cart id is required"`
-		Amount int    `json:"amount" validate:"required,gte=2000" error-required:"Field amount is required" error-gte:"Amount must be greater than 2000"`
+		CategoryId string `json:"category_id" validate:"required" error-required:"Missing category_id field"`
+		Quantity   int    `json:"quantity" validate:"required,gte=1" error-required:"Missing quantity field" error-gte:"Quantity must be greater than 1"`
 	}
 	CartItemResponse struct {
 		Items []CartItem `json:"items"`
