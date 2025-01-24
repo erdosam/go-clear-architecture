@@ -16,6 +16,8 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/httpserver"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
+	"github.com/casbin/casbin-pg-adapter"
+	"github.com/casbin/casbin/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
 	"log"
@@ -66,7 +68,8 @@ func newAuthenticationMiddleware() middleware.Authentication {
 func newAuthorizationMiddleware() middleware.Authorization {
 	config := provideSingletonConfig()
 	loggerInterface := provideSingletonLogger(config)
-	authorization := middleware.NewAbacAuthorization(loggerInterface)
+	enforcer := newCasbinEnforcer(config, loggerInterface)
+	authorization := middleware.NewAbacAuthorization(loggerInterface, enforcer)
 	return authorization
 }
 
@@ -162,6 +165,22 @@ func provideMiddlewares(a1 middleware.Authentication, a2 middleware.Authorizatio
 
 func provideValidator() *validator.Validate {
 	return validator.New(validator.WithRequiredStructEnabled())
+}
+
+func newCasbinEnforcer(cfg *config.Config, l logger.Interface) *casbin.Enforcer {
+	pga, err := pgadapter.NewAdapter(cfg.PG.URL)
+	if err != nil {
+		l.Fatal(err)
+	}
+	enforcer, err := casbin.NewEnforcer(cfg.Casbin.ModelFile, pga)
+	if err != nil {
+		l.Fatal(err)
+	}
+	err = enforcer.LoadPolicy()
+	if err != nil {
+		l.Fatal(err)
+	}
+	return enforcer
 }
 
 func provideSingletonConfig() *config.Config {

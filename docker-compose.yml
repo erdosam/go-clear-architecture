@@ -14,6 +14,7 @@ services:
       - $GOPATH/bin:/go/bin
       - .:/go/src/github.com/gilkor/ba-version-2
       - $PUBLIC_CLIENT_KEY:/etc/juno/key.rsa.pub
+      - ./files/abac_model.conf:/app/casbin/model.conf
     ports:
       - 8034:8080
     depends_on:
@@ -53,6 +54,7 @@ services:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
       - ./config/config.yml:/usr/local/bin/config/config.yml
       - $PUBLIC_CLIENT_KEY:/etc/juno/key.rsa.pub
+      - ./files/abac_model.conf:/app/casbin/model.conf
 
   integration:
     build:

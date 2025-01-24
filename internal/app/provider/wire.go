@@ -12,6 +12,8 @@ import (
 	"github.com/arendi-project/ba-version-2/pkg/httpserver"
 	"github.com/arendi-project/ba-version-2/pkg/logger"
 	"github.com/arendi-project/ba-version-2/pkg/postgres"
+	pgadapter "github.com/casbin/casbin-pg-adapter"
+	"github.com/casbin/casbin/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
 	"log"
@@ -115,8 +117,24 @@ func newAuthenticationMiddleware() middleware.Authentication {
 }
 
 func newAuthorizationMiddleware() middleware.Authorization {
-	wire.Build(middleware.NewAbacAuthorization, commonSet)
+	wire.Build(middleware.NewAbacAuthorization, commonSet, newCasbinEnforcer)
 	return nil
+}
+
+func newCasbinEnforcer(cfg *config.Config, l logger.Interface) *casbin.Enforcer {
+	pga, err := pgadapter.NewAdapter(cfg.PG.URL)
+	if err != nil {
+		l.Fatal(err)
+	}
+	enforcer, err := casbin.NewEnforcer(cfg.Casbin.ModelFile, pga)
+	if err != nil {
+		l.Fatal(err)
+	}
+	err = enforcer.LoadPolicy()
+	if err != nil {
+		l.Fatal(err)
+	}
+	return enforcer
 }
 
 func newCartingUseCase() usecase.Carting {

@@ -19,3 +19,6 @@ rabbitmq:
 juno:
   base_url: https://juno.domain.com/v2
   client_key_file: /etc/juno/key.rsa.pub
+
+casbin:
+  model_file: /app/casbin/model.conf

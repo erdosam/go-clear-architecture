@@ -9,11 +9,12 @@ import (
 type (
 	// Config -.
 	Config struct {
-		App  `yaml:"app"`
-		HTTP `yaml:"http"`
-		Log  `yaml:"logger"`
-		PG   `yaml:"postgres"`
-		Juno `yaml:"juno"`
+		App    `yaml:"app"`
+		HTTP   `yaml:"http"`
+		Log    `yaml:"logger"`
+		PG     `yaml:"postgres"`
+		Juno   `yaml:"juno"`
+		Casbin `yaml:"casbin"`
 		//RMQ  `yaml:"rabbitmq"`
 	}
 
@@ -50,6 +51,10 @@ type (
 		ServerExchange string `env-required:"true" yaml:"rpc_server_exchange" env:"RMQ_RPC_SERVER"`
 		ClientExchange string `env-required:"true" yaml:"rpc_client_exchange" env:"RMQ_RPC_CLIENT"`
 		URL            string `env-required:"true"                            env:"RMQ_URL"`
+	}
+
+	Casbin struct {
+		ModelFile string `env-required:"true" yaml:"model_file" env:"CASBIN_MODEL_FILE"`
 	}
 )
 
