@@ -38,14 +38,17 @@ services:
       - 15672:15672
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        GOPATH: /go/
     image: ba-version-2
     environment:
       PG_URL: $PG_URL
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GIN_MODE: release
-      GOPATH: /go/
       LOG_LEVEL: warn
+      CASBIN_MODEL_FILE: /usr/local/bin/config/model.conf
     ports:
       - 8045:8080
     depends_on:
@@ -55,7 +58,7 @@ services:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
       - ./config/config.yml:/usr/local/bin/config/config.yml
       - $PUBLIC_CLIENT_KEY:/etc/juno/key.rsa.pub
-      - ./files/abac_model.conf:/app/casbin/model.conf
+      - ./files/abac_model.conf:/usr/local/bin/config/model.conf
 
   integration:
     build:

@@ -26,7 +26,7 @@ func (acc *casbinAuthorization) Authorize(dom string, act string) gin.HandlerFun
 			obj = ""
 		}
 		if ok, _ := acc.enforcer.Enforce(user, obj, dom, act); !ok {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Unauthorized action"})
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Unauthorized action"})
 			return
 		}
 		c.Next()
