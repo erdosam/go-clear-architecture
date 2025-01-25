@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -54,7 +53,8 @@ type (
 	}
 
 	Casbin struct {
-		ModelFile string `env-required:"true" yaml:"model_file" env:"CASBIN_MODEL_FILE"`
+		ModelFile          string `env-required:"true" yaml:"model_file" env:"CASBIN_MODEL_FILE"`
+		LoadPolicyInterval int    `env-required:"true" yaml:"load_policy_interval" env:"LOAD_POLICY_INTERVAL"`
 	}
 )
 

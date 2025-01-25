@@ -54,8 +54,12 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 }
 
 func getIdentity(c *gin.Context) entity.User {
-	user, _ := c.Get("identity")
+	user, _ := c.Get(middleware.IdentityContextKey)
 	return user.(entity.User)
+}
+
+func setAccessResource(c *gin.Context, value any) {
+	c.Set(middleware.ResourceContextKey, value)
 }
 
 func shouldBindJSON[T any](c *gin.Context) (T, error) {

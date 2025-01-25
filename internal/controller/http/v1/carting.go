@@ -12,16 +12,16 @@ type cartingRoutes struct {
 }
 
 func (rh *routerHandler) initCartingRoutes(parent *gin.RouterGroup) {
-	route := &cartingRoutes{
+	r := &cartingRoutes{
 		usecase: rh.feature.Carting,
 	}
 	h := parent.Group("/cart")
 	{
 		h.HEAD("/items", func(c *gin.Context) { c.Status(http.StatusOK) })
-		h.GET("/items", rh.access.Authorize("item", "read"), route.getCartItems)
-		h.GET("/item/:id", rh.access.Authorize("item", "read"), route.getCartItem)
-		h.POST("/item/add", rh.access.Authorize("item", "write"), route.addItemToCart)
-		h.POST("/item/edit/:id", rh.access.Authorize("item", "write"), route.editCartItem)
+		h.GET("/items", rh.access.Authorize("cart-item", "read"), r.getCartItems)
+		h.GET("/item/:id", rh.access.Authorize("cart-item", "read"), r.getCartItem)
+		h.POST("/item/add", rh.access.Authorize("cart-item", "add"), r.addItemToCart)
+		h.POST("/item/edit/:id", r.editCartItemResource, rh.access.Authorize("cart-item", "edit"), r.editCartItem)
 	}
 	rh.log.Info("Done route : carting")
 }
@@ -58,6 +58,12 @@ func (r *cartingRoutes) addItemToCart(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "")
+}
+
+func (r *cartingRoutes) editCartItemResource(c *gin.Context) {
+	cart, _ := r.usecase.GetCart(getIdentity(c))
+	item, _ := r.usecase.GetItem(cart, c.Param("id"))
+	setAccessResource(c, item)
 }
 
 func (r *cartingRoutes) editCartItem(c *gin.Context) {

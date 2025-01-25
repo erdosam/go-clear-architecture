@@ -22,3 +22,4 @@ juno:
 
 casbin:
   model_file: /app/casbin/model.conf
+  load_policy_interval: 60

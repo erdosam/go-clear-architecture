@@ -22,6 +22,7 @@ import (
 	"github.com/google/wire"
 	"log"
 	"sync"
+	"time"
 )
 
 // Injectors from wire.go:
@@ -68,7 +69,7 @@ func newAuthenticationMiddleware() middleware.Authentication {
 func newAuthorizationMiddleware() middleware.Authorization {
 	config := provideSingletonConfig()
 	loggerInterface := provideSingletonLogger(config)
-	enforcer := newCasbinEnforcer(config, loggerInterface)
+	enforcer := provideSingletonCasbinEnforcer(config, loggerInterface)
 	authorization := middleware.NewAbacAuthorization(loggerInterface, enforcer)
 	return authorization
 }
@@ -108,6 +109,7 @@ type singletons struct {
 	config     *config.Config
 	log        logger.Interface
 	db         *postgres.Postgres
+	enforcer   *casbin.Enforcer
 	cartingDAO dao.CartingDAO
 	orderDAO   dao.OrderDAO
 	userDAO    dao.UserDAO
@@ -118,6 +120,7 @@ type singletons struct {
 		cartingDAO sync.Once
 		orderDAO   sync.Once
 		userDAO    sync.Once
+		enforcer   sync.Once
 	}
 }
 
@@ -167,20 +170,36 @@ func provideValidator() *validator.Validate {
 	return validator.New(validator.WithRequiredStructEnabled())
 }
 
-func newCasbinEnforcer(cfg *config.Config, l logger.Interface) *casbin.Enforcer {
-	pga, err := pgadapter.NewAdapter(cfg.PG.URL)
-	if err != nil {
-		l.Fatal(err)
-	}
-	enforcer, err := casbin.NewEnforcer(cfg.Casbin.ModelFile, pga)
-	if err != nil {
-		l.Fatal(err)
-	}
-	err = enforcer.LoadPolicy()
-	if err != nil {
-		l.Fatal(err)
-	}
-	return enforcer
+func provideSingletonCasbinEnforcer(cfg *config.Config, l logger.Interface) *casbin.Enforcer {
+	s.once.enforcer.Do(func() {
+		pga, err := pgadapter.NewAdapter(cfg.PG.URL)
+		if err != nil {
+			l.Fatal(err)
+		}
+		enforcer, err := casbin.NewEnforcer(cfg.Casbin.ModelFile, pga)
+		if err != nil {
+			l.Fatal(err)
+		}
+		err = enforcer.LoadPolicy()
+		if err != nil {
+			l.Fatal(err)
+		}
+		ticker := time.NewTicker(time.Duration(cfg.Casbin.LoadPolicyInterval) * time.Second)
+		go func() {
+			for {
+				select {
+				case <-ticker.C:
+					l.Info("Load policy")
+					err := enforcer.LoadPolicy()
+					if err != nil {
+						l.Error("Error load policy: %s", err.Error())
+					}
+				}
+			}
+		}()
+		s.enforcer = enforcer
+	})
+	return s.enforcer
 }
 
 func provideSingletonConfig() *config.Config {
