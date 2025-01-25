@@ -45,6 +45,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GIN_MODE: release
       GOPATH: /go/
+      LOG_LEVEL: warn
     ports:
       - 8045:8080
     depends_on:
