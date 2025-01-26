@@ -35,6 +35,11 @@ salt
 ==|==
 "123             "|Items/Litter (Qty)
 --|--
+Image 1|<color:red><&trash>
+Image 2|<color:red><&trash>
+Image 3|<color:red><&trash>
+[<color:blue><&image> Add Image]
+--|--
 [<&plus> Add Item(s)]
 }
 !endprocedure
