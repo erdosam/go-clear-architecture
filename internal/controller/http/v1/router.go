@@ -10,9 +10,10 @@ import (
 )
 
 type Feature struct {
-	Carting usecase.Carting
-	Order   usecase.Order
-	User    usecase.User
+	Carting  usecase.Carting
+	Order    usecase.Order
+	User     usecase.User
+	Category usecase.Category
 }
 
 type Middleware struct {
@@ -47,6 +48,7 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 
 	v1 := handler.Group("/v1", m.Authentication.Authenticate)
 	{
+		handler.initCategoryRoutes(v1)
 		handler.initCartingRoutes(v1)
 		handler.initOrderRoutes(v1)
 	}

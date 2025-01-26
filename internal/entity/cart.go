@@ -12,8 +12,8 @@ type (
 	CartItem struct {
 		Id         string `db:"id" json:"id"`
 		UserId     string `db:"user_id" json:"user_id"`
-		CategoryId string `json:"category_id"`
-		Quantity   string `json:"quantity"`
+		CategoryId string `db:"category_id" json:"category_id"`
+		Quantity   string `db:"quantity" json:"quantity"`
 		Blamable
 	}
 	AddItemToCartForm struct {

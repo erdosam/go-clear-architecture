@@ -22,21 +22,23 @@ import (
 )
 
 type singletons struct {
-	config     *config.Config
-	log        logger.Interface
-	db         *postgres.Postgres
-	enforcer   *casbin.Enforcer
-	cartingDAO dao.CartingDAO
-	orderDAO   dao.OrderDAO
-	userDAO    dao.UserDAO
-	once       struct {
-		config     sync.Once
-		log        sync.Once
-		db         sync.Once
-		cartingDAO sync.Once
-		orderDAO   sync.Once
-		userDAO    sync.Once
-		enforcer   sync.Once
+	config      *config.Config
+	log         logger.Interface
+	db          *postgres.Postgres
+	enforcer    *casbin.Enforcer
+	categoryDAO dao.TrashCategoryDAO
+	cartingDAO  dao.CartingDAO
+	orderDAO    dao.OrderDAO
+	userDAO     dao.UserDAO
+	once        struct {
+		config      sync.Once
+		log         sync.Once
+		db          sync.Once
+		categoryDAO sync.Once
+		cartingDAO  sync.Once
+		orderDAO    sync.Once
+		userDAO     sync.Once
+		enforcer    sync.Once
 	}
 }
 
@@ -50,6 +52,7 @@ var (
 		provideValidator,
 	)
 	daoSet = wire.NewSet(
+		newSingletonTrashCategoryDAO,
 		newSingletonCartingDAO,
 		newSingletonOrderDAO,
 		newSingletonUserDAO,
@@ -63,6 +66,7 @@ var (
 		newCartingUseCase,
 		newOrderUseCase,
 		newUserUseCase,
+		newCategoryUseCase,
 		provideFeatures,
 	)
 )
@@ -89,11 +93,12 @@ func NewHttpServer() *httpserver.Server {
 	return nil
 }
 
-func provideFeatures(c usecase.Carting, o usecase.Order, u usecase.User) *v1.Feature {
+func provideFeatures(cat usecase.Category, c usecase.Carting, o usecase.Order, u usecase.User) *v1.Feature {
 	return &v1.Feature{
-		Carting: c,
-		Order:   o,
-		User:    u,
+		Category: cat,
+		Carting:  c,
+		Order:    o,
+		User:     u,
 	}
 }
 
@@ -156,6 +161,11 @@ func provideSingletonCasbinEnforcer(cfg *config.Config, l logger.Interface) *cas
 	return s.enforcer
 }
 
+func newCategoryUseCase() usecase.Category {
+	wire.Build(usecase.NewCategoryUsecase, commonSet, daoSet)
+	return nil
+}
+
 func newCartingUseCase() usecase.Carting {
 	wire.Build(usecase.NewCartingUseCase, commonSet, daoSet)
 	return nil
@@ -207,6 +217,13 @@ func provideJunoConfig(cfg *config.Config) config.Juno {
 
 func provideServerOptions(cfg *config.Config) []httpserver.Option {
 	return []httpserver.Option{httpserver.Port(cfg.HTTP.Port)}
+}
+
+func newSingletonTrashCategoryDAO(l logger.Interface, pg *postgres.Postgres) dao.TrashCategoryDAO {
+	s.once.categoryDAO.Do(func() {
+		s.categoryDAO = dao.NewTrashCategoryDAO(l, pg)
+	})
+	return s.categoryDAO
 }
 
 func newSingletonCartingDAO(l logger.Interface, pg *postgres.Postgres) dao.CartingDAO {

@@ -12,6 +12,9 @@ type (
 	User interface {
 		GetUserById(id string) (entity.User, error)
 	}
+	Category interface {
+		GetAvailableCategories() ([]entity.TrashCategory, error)
+	}
 	Carting interface {
 		GetCart(u entity.User) (entity.Cart, error)
 		GetItems(c entity.Cart) ([]entity.CartItem, error)

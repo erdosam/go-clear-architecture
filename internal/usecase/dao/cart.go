@@ -19,7 +19,7 @@ func NewCartingDAO(log logger.Interface, pg *postgres.Postgres) CartingDAO {
 
 func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error) {
 	var rows []entity.CartItem
-	q := dao.Rebind(`SELECT * FROM public.cart_item WHERE user_id = ?`)
+	q := dao.Rebind(`SELECT id, user_id, category_id, quantity FROM public.cart_item WHERE user_id = ?`)
 	err := dao.Select(&rows, q, c.UserId)
 	if err != nil {
 		panic(err.(any))
@@ -30,10 +30,10 @@ func (dao *cartingDAO) FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)
 
 func (dao *cartingDAO) FindOneItem(arg ...interface{}) (entity.CartItem, error) {
 	var item entity.CartItem
-	query, args := buildFindQuery(`SELECT * FROM public.cart_item`, arg...)
+	query, args := buildFindQuery(`SELECT id, user_id FROM public.cart_item`, arg...)
 	q := dao.Rebind(query)
 	if err := dao.Get(&item, q, args...); err != nil {
-		if err.Error() == "sql: no rows in result set" {
+		if err.Error() == errorSqlEmptyResult {
 			return entity.CartItem{}, err
 		}
 		panic(err.(any))

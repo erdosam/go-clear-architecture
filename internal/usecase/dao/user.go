@@ -26,7 +26,7 @@ func (u *userDAO) FindUserById(id string) (entity.User, error) {
 
 	var user entity.User
 	u.log.Debug("Finding user with id %s", id)
-	q := u.Rebind(`SELECT * FROM public.user WHERE id = ?`)
+	q := u.Rebind(`SELECT id, display_name, status, mobile_code, phone_number FROM public.user WHERE id = ?`)
 	if err := u.Get(&user, q, id); err != nil {
 		return entity.User{}, fmt.Errorf("user %s not found", id)
 	}

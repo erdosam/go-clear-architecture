@@ -43,10 +43,11 @@ func NewLogger() logger.Interface {
 func NewHttpServer() *httpserver.Server {
 	config := provideSingletonConfig()
 	loggerInterface := provideSingletonLogger(config)
+	category := newCategoryUseCase()
 	carting := newCartingUseCase()
 	order := newOrderUseCase()
 	user := newUserUseCase()
-	feature := provideFeatures(carting, order, user)
+	feature := provideFeatures(category, carting, order, user)
 	authentication := newAuthenticationMiddleware()
 	authorization := newAuthorizationMiddleware()
 	middleware := provideMiddlewares(authentication, authorization)
@@ -72,6 +73,16 @@ func newAuthorizationMiddleware() middleware.Authorization {
 	enforcer := provideSingletonCasbinEnforcer(config, loggerInterface)
 	authorization := middleware.NewAbacAuthorization(loggerInterface, enforcer)
 	return authorization
+}
+
+func newCategoryUseCase() usecase.Category {
+	config := provideSingletonConfig()
+	loggerInterface := provideSingletonLogger(config)
+	postgresPostgres := provideSingletonRepository(config, loggerInterface)
+	trashCategoryDAO := newSingletonTrashCategoryDAO(loggerInterface, postgresPostgres)
+	validate := provideValidator()
+	category := usecase.NewCategoryUsecase(loggerInterface, trashCategoryDAO, validate)
+	return category
 }
 
 func newCartingUseCase() usecase.Carting {
@@ -106,21 +117,23 @@ func newUserUseCase() usecase.User {
 // wire.go:
 
 type singletons struct {
-	config     *config.Config
-	log        logger.Interface
-	db         *postgres.Postgres
-	enforcer   *casbin.Enforcer
-	cartingDAO dao.CartingDAO
-	orderDAO   dao.OrderDAO
-	userDAO    dao.UserDAO
-	once       struct {
-		config     sync.Once
-		log        sync.Once
-		db         sync.Once
-		cartingDAO sync.Once
-		orderDAO   sync.Once
-		userDAO    sync.Once
-		enforcer   sync.Once
+	config      *config.Config
+	log         logger.Interface
+	db          *postgres.Postgres
+	enforcer    *casbin.Enforcer
+	categoryDAO dao.TrashCategoryDAO
+	cartingDAO  dao.CartingDAO
+	orderDAO    dao.OrderDAO
+	userDAO     dao.UserDAO
+	once        struct {
+		config      sync.Once
+		log         sync.Once
+		db          sync.Once
+		categoryDAO sync.Once
+		cartingDAO  sync.Once
+		orderDAO    sync.Once
+		userDAO     sync.Once
+		enforcer    sync.Once
 	}
 }
 
@@ -134,6 +147,7 @@ var (
 		provideValidator,
 	)
 	daoSet = wire.NewSet(
+		newSingletonTrashCategoryDAO,
 		newSingletonCartingDAO,
 		newSingletonOrderDAO,
 		newSingletonUserDAO,
@@ -147,15 +161,17 @@ var (
 		newCartingUseCase,
 		newOrderUseCase,
 		newUserUseCase,
+		newCategoryUseCase,
 		provideFeatures,
 	)
 )
 
-func provideFeatures(c usecase.Carting, o usecase.Order, u usecase.User) *v1.Feature {
+func provideFeatures(cat usecase.Category, c usecase.Carting, o usecase.Order, u usecase.User) *v1.Feature {
 	return &v1.Feature{
-		Carting: c,
-		Order:   o,
-		User:    u,
+		Category: cat,
+		Carting:  c,
+		Order:    o,
+		User:     u,
 	}
 }
 
@@ -237,6 +253,13 @@ func provideJunoConfig(cfg *config.Config) config.Juno {
 
 func provideServerOptions(cfg *config.Config) []httpserver.Option {
 	return []httpserver.Option{httpserver.Port(cfg.HTTP.Port)}
+}
+
+func newSingletonTrashCategoryDAO(l logger.Interface, pg *postgres.Postgres) dao.TrashCategoryDAO {
+	s.once.categoryDAO.Do(func() {
+		s.categoryDAO = dao.NewTrashCategoryDAO(l, pg)
+	})
+	return s.categoryDAO
 }
 
 func newSingletonCartingDAO(l logger.Interface, pg *postgres.Postgres) dao.CartingDAO {
