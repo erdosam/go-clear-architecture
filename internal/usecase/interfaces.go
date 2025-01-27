@@ -10,7 +10,7 @@ type Identity interface {
 // features
 type (
 	User interface {
-		GetUserById(id string) (entity.User, error)
+		GetUserByJunoId(id string, clientKey string) (entity.User, error)
 	}
 	Category interface {
 		GetAvailableCategories() ([]entity.TrashCategory, error)

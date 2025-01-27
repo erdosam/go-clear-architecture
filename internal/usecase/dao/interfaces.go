@@ -6,7 +6,7 @@ const errorSqlEmptyResult = "sql: no rows in result set"
 
 type (
 	UserDAO interface {
-		FindUserById(id string) (entity.User, error)
+		FindUserByJunoId(id string, clientKey string) (entity.User, error)
 	}
 	CartingDAO interface {
 		FindItemsByCart(c entity.Cart) ([]entity.CartItem, error)

@@ -19,15 +19,18 @@ func NewUserDAO(l logger.Interface, pg *postgres.Postgres) UserDAO {
 	return &userDAO{pg, l}
 }
 
-func (u *userDAO) FindUserById(id string) (entity.User, error) {
+func (u *userDAO) FindUserByJunoId(id string, clientKey string) (entity.User, error) {
 	if id == "" {
 		return entity.User{}, errors.New("empty user")
 	}
 
 	var user entity.User
-	u.log.Debug("Finding user with id %s", id)
-	q := u.Rebind(`SELECT id, display_name, status, mobile_code, phone_number FROM public.user WHERE id = ?`)
-	if err := u.Get(&user, q, id); err != nil {
+	u.log.Debug("Finding user with id %s and key %s", id, clientKey)
+	q := u.Rebind(`SELECT
+		u.id, u.display_name, u.status, u.mobile_code, u.phone_number
+		FROM public.user u 
+		    JOIN public.user_auth_juno j ON j.user_id = u.id WHERE j.account_id = ? AND j.client_key = ?`)
+	if err := u.Get(&user, q, id, clientKey); err != nil {
 		return entity.User{}, fmt.Errorf("user %s not found", id)
 	}
 	return user, nil
