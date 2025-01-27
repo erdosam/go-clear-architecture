@@ -56,7 +56,7 @@ CREATE TABLE region
 CREATE TABLE "user"
 (
     id           VARCHAR(16) DEFAULT nanoid() PRIMARY KEY,
-    mobile_code  CHAR(5)     NOT NULL,
+    mobile_code  VARCHAR(5)  NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
     display_name VARCHAR(64) NOT NULL,
     status       VARCHAR(16) DEFAULT 'created',
@@ -83,19 +83,20 @@ CREATE TABLE user_address
     deleted_at TIMESTAMP
 );
 
-CREATE TABLE user_auth
+CREATE TABLE user_auth_juno
 (
     id         SERIAL PRIMARY KEY,
     user_id    VARCHAR(16) NOT NULL REFERENCES "user" (id),
-    auth_type  CHAR(10)    NOT NULL DEFAULT 'juno',
-    created_at TIMESTAMP            DEFAULT CURRENT_TIMESTAMP,
+    account_id VARCHAR(8)  NOT NULL,
+    client_id  VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(16) NOT NULL
 );
 
 -- Product Category Tables
 CREATE TABLE trash_category_group
 (
-    key CHAR(50) PRIMARY KEY
+    key VARCHAR(50) PRIMARY KEY
 );
 
 CREATE TABLE trash_category
@@ -103,8 +104,8 @@ CREATE TABLE trash_category
     id                 VARCHAR(16) DEFAULT nanoid() PRIMARY KEY,
     name               VARCHAR(255) NOT NULL,
     parent_category_id VARCHAR(16) REFERENCES "trash_category" (id),
-    "group"            CHAR(50) REFERENCES trash_category_group (key),
-    status             CHAR(14)    DEFAULT 'created',
+    "group"            VARCHAR(50) REFERENCES trash_category_group (key),
+    status             VARCHAR(14) DEFAULT 'created',
     created_at         TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     created_by         VARCHAR(16)  NOT NULL,
     updated_at         TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -189,7 +190,7 @@ CREATE TABLE picker_partner_point
 
 CREATE TABLE cost_type
 (
-    key CHAR(50) PRIMARY KEY
+    key VARCHAR(50) PRIMARY KEY
 );
 
 CREATE TABLE partner_category
@@ -206,7 +207,7 @@ CREATE TABLE partner_category_cost
     id                  VARCHAR(16) DEFAULT nanoid() PRIMARY KEY,
     partner_category_id VARCHAR(16) NOT NULL REFERENCES partner_category (id),
     region              VARCHAR(16) NOT NULL REFERENCES region (id),
-    cost_type           CHAR(50)    NOT NULL REFERENCES cost_type (key),
+    cost_type           VARCHAR(50) NOT NULL REFERENCES cost_type (key),
     cost_per_unit       DECIMAL(10, 2),
     created_at          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     created_by          VARCHAR(16) NOT NULL
