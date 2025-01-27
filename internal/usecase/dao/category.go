@@ -19,7 +19,19 @@ func NewTrashCategoryDAO(l logger.Interface, pg *postgres.Postgres) TrashCategor
 
 func (dao *categoryDAO) FindCategories(arg ...interface{}) ([]entity.TrashCategory, error) {
 	var rows []entity.TrashCategory
-	query, args := buildFindQuery(`SELECT id, name, parent_category_id, "group", status FROM public.trash_category`, arg...)
+	query, args := buildFindQuery(`
+		SELECT c.id,
+			   c.name,
+			   c.parent_category_id,
+			   c."group",
+			   c.status,
+			   cd.description,
+			   cd.image_url_md as "image.image_url_md",
+			   cd.image_url_sm as "image.image_url_sm",
+			   cd.image_url_lg as "image.image_url_lg"
+		FROM public.trash_category c
+				 JOIN public.trash_category_detail cd ON cd.category_id = c.id
+		`, arg...)
 	q := dao.Rebind(query)
 	if err := dao.Select(&rows, q, args...); err != nil {
 		dao.log.Debug(err)
