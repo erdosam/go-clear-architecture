@@ -65,7 +65,7 @@ CREATE TABLE "user"
 
 CREATE TABLE user_profile
 (
-    id            SERIAL PRIMARY KEY,
+    id            BIGSERIAL PRIMARY KEY,
     user_id       VARCHAR(16)  NOT NULL REFERENCES "user" (id),
     avatar_url_md VARCHAR(255) NOT NULL,
     avatar_url_sm VARCHAR(255),
@@ -85,10 +85,10 @@ CREATE TABLE user_address
 
 CREATE TABLE user_auth_juno
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGSERIAL PRIMARY KEY,
     user_id    VARCHAR(16) NOT NULL REFERENCES "user" (id),
     account_id VARCHAR(8)  NOT NULL,
-    client_id  VARCHAR(36) NOT NULL,
+    client_key VARCHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(16) NOT NULL
 );
