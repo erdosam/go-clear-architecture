@@ -5,12 +5,14 @@ package app
 import (
 	"errors"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/source"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"log"
 	"os"
 	"time"
 	// migrate tools
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 const (
@@ -29,7 +31,15 @@ func init() {
 		m        *migrate.Migrate
 	)
 	for attempts > 0 {
-		m, err = migrate.New("file://files/migration", databaseURL)
+		migrationSrc, ok := os.LookupEnv("MIGRATION_SRC")
+		if !ok {
+			log.Fatalf("migrate: environment variable not declared: MIGRATION_SRC")
+		}
+		srcDriver, err := source.Open(migrationSrc)
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		m, err = migrate.NewWithSourceInstance(migrationSrc, srcDriver, databaseURL)
 		if err == nil {
 			break
 		}

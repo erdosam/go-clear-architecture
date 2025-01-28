@@ -7,6 +7,7 @@ services:
       GOPATH: /go/
       GIN_MODE: debug
       PG_URL: $PG_URL
+      MIGRATION_SRC: file://files/migration
     working_dir: "/go/src/github.com/gilkor/ba-version-2/"
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
@@ -49,6 +50,7 @@ services:
       GIN_MODE: release
       LOG_LEVEL: warn
       CASBIN_MODEL_FILE: /usr/local/bin/config/model.conf
+      MIGRATION_SRC: $MIGRATION_SRC
     ports:
       - 8045:8080
     depends_on:
