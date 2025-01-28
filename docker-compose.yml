@@ -1,7 +1,7 @@
 services:
   dev:
     image: golang:${GO_VERSION}
-    command: [ "go", "run", "-tags", "demo", "./cmd/app" ]
+    command: [ "go", "run", "-tags", "demo,migrate", "./cmd/app" ]
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
       GOPATH: /go/
