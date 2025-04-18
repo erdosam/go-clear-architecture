@@ -1,10 +1,3 @@
-<p align="center" style="margin:0">
-    <a href="https://app.buangin.com" target="_blank">
-        <img src="https://app.buangin.com/assets/icons/icon-192x192.png" height="192px">
-    </a>
-</p>
-<h1 align="center" style="margin-top:0">Buangin App Api</h1>
-
 ## Commonly used clis
 ```shell
 
@@ -13,4 +6,16 @@ curl -i -H \
   "http://localhost:8034/v1/cart/items?user_id=test"; 
   echo "";
 
+```
+
+### Migration
+Temporarily change the number in the `command` section of the `migration` service in `docker-compose.yml`.
+A positive number indicates an up migration, while a negative number indicates a down migration.
+
+```yaml
+  command: [ "go", "run", "-tags", "migrate", "./cmd/migrate", "0"]
+```
+To migrate, run:
+```shell
+docker-compose run --rm migration
 ```
