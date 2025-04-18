@@ -1,5 +1,5 @@
 services:
-  dev:
+  dev: &base
     image: golang:${GO_VERSION}
     command: [ "go", "run", "-tags", "demo,migrate", "./cmd/app" ]
     environment:
@@ -20,6 +20,15 @@ services:
       - 8034:8080
     depends_on:
       - postgres
+
+  migrate:
+    <<: *base
+    command: [ "go", "run", "-tags", "migrate", "./cmd/migrate", "0"]
+    environment:
+      PG_URL: $PG_URL
+      MIGRATION_SRC: file://files/migration
+      MIGRATION_ONLY: true
+    ports: []
 
   postgres:
     image: postgres

@@ -10,6 +10,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"log"
 	"os"
+	"strconv"
 	"time"
 	// migrate tools
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -20,22 +21,26 @@ const (
 	_defaultTimeout  = time.Second
 )
 
+func MigrateDown() {
+}
+
 func init() {
 	databaseURL, ok := os.LookupEnv("PG_URL")
 	if !ok || len(databaseURL) == 0 {
 		log.Fatalf("migrate: environment variable not declared: PG_URL")
 	}
 	var (
-		attempts = _defaultAttempts
-		err      error
-		m        *migrate.Migrate
+		attempts  = _defaultAttempts
+		err       error
+		m         *migrate.Migrate
+		srcDriver source.Driver
 	)
 	for attempts > 0 {
 		migrationSrc, ok := os.LookupEnv("MIGRATION_SRC")
 		if !ok {
 			log.Fatalf("migrate: environment variable not declared: MIGRATION_SRC")
 		}
-		srcDriver, err := source.Open(migrationSrc)
+		srcDriver, err = source.Open(migrationSrc)
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
@@ -53,7 +58,19 @@ func init() {
 		log.Fatalf("Migrate: postgres connect error: %s", err)
 	}
 
-	err = m.Up()
+	var migrateMode string
+	_, migrateOnly := os.LookupEnv("MIGRATION_ONLY")
+	if migrateOnly {
+		s := 0
+		if len(os.Args) > 1 {
+			s, _ = strconv.Atoi(os.Args[1])
+		}
+		err = m.Steps(s)
+		migrateMode = "down"
+	} else {
+		err = m.Up()
+		migrateMode = "up"
+	}
 	defer func(m *migrate.Migrate) {
 		err, _ := m.Close()
 		if err != nil {
@@ -61,13 +78,11 @@ func init() {
 		}
 	}(m)
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migrate: up error: %s", err)
+		log.Fatalf("Migrate: %s error: %s", migrateMode, err)
 	}
-
 	if errors.Is(err, migrate.ErrNoChange) {
 		log.Printf("Migrate: no change")
 		return
 	}
-
-	log.Printf("Migrate: up success")
+	log.Printf("Migrate: %s success", migrateMode)
 }
