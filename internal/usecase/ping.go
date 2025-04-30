@@ -14,7 +14,6 @@ const (
 var _ Ping = &pingUsecase{}
 
 func NewPingUsecase(ps messaging.Pubsub) Ping {
-	ps.CreateTopics([]messaging.PubsubTopic{})
 	return &pingUsecase{ps}
 }
 

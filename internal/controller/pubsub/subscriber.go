@@ -22,6 +22,9 @@ func NewSubscriptionsHandler(l logger.Interface, ps messaging.Pubsub) *Subscript
 }
 
 func (sh *SubscriptionHandler) Init() {
+	sh.pubsub.CreateTopics([]messaging.PubsubTopic{
+		usecase.PingTestTopic,
+	})
 	go sh.subscribePingTest()
 }
 
