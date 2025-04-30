@@ -1,0 +1,6 @@
+.env
+files/*.rsa
+files/*.rsa.pub
+files/*.drawio.bkp
+
+.idea/

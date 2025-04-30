@@ -1,0 +1,110 @@
+services:
+  dev: &base
+    build:
+      context: .
+      target: development
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
+      GOPATH: /go/
+      GIN_MODE: debug
+      PG_URL: $PG_URL
+      MIGRATION_SRC: file://files/migration
+      PUBSUB_EMULATOR_HOST: emulator:8085
+    working_dir: "/go/src/github.com/erdosam/the-app/"
+    volumes:
+      - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+      - $GOPATH/pkg:/go/pkg
+      - $GOPATH/bin:/go/bin
+      - .:/go/src/github.com/erdosam/the-app
+      - $PUBLIC_CLIENT_KEY:/etc/jwt-auth/key.rsa.pub
+      - ./files/abac_model.conf:/app/casbin/model.conf
+    expose:
+      - "8080"
+    depends_on:
+      - emulator
+      - postgres
+
+  dev2:
+    <<: *base
+  # add more to simulate "real" load-balancer
+  #dev3:
+  #  <<: *base
+
+  web:
+    image: nginx:alpine
+    ports:
+      - ${WEB_PORT}:80
+    volumes:
+      - ./files/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - dev
+      - dev2
+      #- dev3
+
+  migrate:
+    <<: *base
+    entrypoint: ["go", "run", "-tags", "migrate", "./cmd/migrate"]
+    environment:
+      PG_URL: $PG_URL
+      MIGRATION_SRC: file://files/migration
+      MIGRATION_ONLY: true
+    ports: [ ]
+
+  postgres:
+    image: postgres
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'pass'
+      POSTGRES_DB: 'the-app-db'
+    ports:
+      - ${PG_PORT}:5432
+
+  rabbitmq:
+    image: rabbitmq:3.8.12-management
+    ports:
+      - :5672
+      - :15672
+
+  emulator:
+    # run gcloud auth login if required
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    ports:
+      - :8085
+    command: [ "gcloud", "beta", "emulators", "pubsub", "start", "--host-port=0.0.0.0:8085" ]
+
+  app:
+    build:
+      context: .
+      args:
+        GOPATH: /go/
+    image: the-app-prod
+    environment:
+      PG_URL: $PG_URL
+      GOOGLE_APPLICATION_CREDENTIALS: /etc/gcloud/credential.json
+      GIN_MODE: release
+      LOG_LEVEL: warn
+      CASBIN_MODEL_FILE: /usr/local/bin/config/model.conf
+      MIGRATION_SRC: $MIGRATION_SRC
+    ports:
+      - 8045:8080
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
+      - ./config/config.yml:/usr/local/bin/config/config.yml
+      - $PUBLIC_CLIENT_KEY:/etc/jwt-auth/key.rsa.pub
+      - ./files/abac_model.conf:/usr/local/bin/config/model.conf
+
+  integration:
+    build:
+      context: .
+      dockerfile: integration-test/Dockerfile
+    image: integration
+    depends_on:
+      - app
+
+volumes:
+  pg-data:
