@@ -58,22 +58,18 @@ func init() {
 		log.Fatalf("Migrate: postgres connect error: %s", err)
 	}
 
-	var migrateMode string
-	_, migrateOnly := os.LookupEnv("MIGRATION_ONLY")
-	if migrateOnly {
-		s := 0
-		if len(os.Args) > 1 {
-			s, _ = strconv.Atoi(os.Args[1])
-		}
+	migrateMode := "up"
+	s := 0
+	if len(os.Args) > 1 {
+		s, _ = strconv.Atoi(os.Args[1])
+	}
+	if s == 0 {
+		err = m.Up()
+	} else {
 		err = m.Steps(s)
-		if s > 0 {
-			migrateMode = "up"
-		} else {
+		if s < 0 {
 			migrateMode = "down"
 		}
-	} else {
-		err = m.Up()
-		migrateMode = "up"
 	}
 	defer func(m *migrate.Migrate) {
 		err, _ := m.Close()
