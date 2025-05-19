@@ -15,6 +15,7 @@ import (
 	"github.com/erdosam/go-clear-architecture/pkg/logger"
 	"github.com/erdosam/go-clear-architecture/pkg/messaging"
 	"github.com/erdosam/go-clear-architecture/pkg/postgres"
+	"github.com/erdosam/go-clear-architecture/pkg/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
 	"log"
@@ -28,6 +29,7 @@ type singletons struct {
 	enforcer *casbin.Enforcer
 	userDAO  dao.UserDAO
 	pubsub   messaging.Pubsub
+	storage  storage.Storage
 	once     struct {
 		config   sync.Once
 		log      sync.Once
@@ -35,6 +37,7 @@ type singletons struct {
 		userDAO  sync.Once
 		enforcer sync.Once
 		pubsub   sync.Once
+		storage  sync.Once
 	}
 }
 
@@ -47,6 +50,7 @@ var (
 		provideSingletonRepository,
 		provideValidator,
 		provideSingletonPubsub,
+		provideSingletonStorage,
 	)
 	daoSet = wire.NewSet(
 		newSingletonUserDAO,
@@ -87,6 +91,20 @@ func NewHttpServer() *httpserver.Server {
 func NewPubsubSubscriber() *pubsub.SubscriptionHandler {
 	wire.Build(
 		pubsub.NewSubscriptionsHandler,
+		commonSet,
+	)
+	return nil
+}
+
+func NewCloudStorage() storage.Storage {
+	wire.Build(
+		commonSet,
+	)
+	return nil
+}
+
+func NewCloudMessaging() messaging.Pubsub {
+	wire.Build(
 		commonSet,
 	)
 	return nil
@@ -168,6 +186,13 @@ func provideSingletonPubsub(l logger.Interface, cfg *config.Config) messaging.Pu
 		s.pubsub = messaging.NewPubsub(cfg, l)
 	})
 	return s.pubsub
+}
+
+func provideSingletonStorage(l logger.Interface, cfg *config.Config) storage.Storage {
+	s.once.storage.Do(func() {
+		s.storage = storage.New(l, cfg)
+	})
+	return s.storage
 }
 
 func provideServerOptions(cfg *config.Config) []httpserver.Option {

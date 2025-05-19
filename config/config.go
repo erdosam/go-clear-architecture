@@ -60,7 +60,8 @@ type (
 	}
 
 	Google struct {
-		ProjectId string `env-required:"true" yaml:"project_id" env:"GOOGLE_PROJECT_ID"`
+		ProjectId  string `env-required:"true" yaml:"project_id" env:"GOOGLE_PROJECT_ID"`
+		BucketName string `env-required:"true" yaml:"bucket_name" env:"GOOGLE_BUCKET_NAME"`
 	}
 )
 

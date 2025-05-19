@@ -12,6 +12,7 @@ type Pubsub interface {
 	CreateTopics(topics []PubsubTopic)
 	Publish(t PubsubTopic, d interface{}) error
 	Subscribe(t PubsubTopic, s string, h handler) error
+	Close() error
 }
 
 type PubsubTopic string
@@ -88,4 +89,8 @@ func (g *googlePubsub) Subscribe(t PubsubTopic, s string, h handler) error {
 		g.log.Info("%s subscription created", sub.ID())
 	}
 	return sub.Receive(ctx, h)
+}
+
+func (g *googlePubsub) Close() error {
+	return g.client.Close()
 }

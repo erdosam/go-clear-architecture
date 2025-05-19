@@ -4,3 +4,11 @@ files/*.rsa.pub
 files/*.drawio.bkp
 
 .idea/
+.vscode/
+.DS_STORE
+
+files/emulator/data/bucketname/*
+!files/emulator/data/bucketname/.gitkeep
+files/emulator/storage/**
+!files/emulator/storage/bucketname/
+!files/emulator/storage/bucketname/.gitkeep

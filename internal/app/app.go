@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/erdosam/go-clear-architecture/internal/app/provider"
 	"github.com/erdosam/go-clear-architecture/pkg/httpserver"
+	"github.com/erdosam/go-clear-architecture/pkg/messaging"
+	"github.com/erdosam/go-clear-architecture/pkg/storage"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,10 +27,12 @@ func subscribe() {
 func listenAndServe() {
 	// HTTP Server
 	hs := provider.NewHttpServer()
-	waitSignal(hs)
+	cs := provider.NewCloudStorage()
+	cm := provider.NewCloudMessaging()
+	waitSignal(hs, cs, cm)
 }
 
-func waitSignal(httpServer *httpserver.Server) {
+func waitSignal(httpServer *httpserver.Server, storage storage.Storage, pubsub messaging.Pubsub) {
 	var err error
 	logService := provider.NewLogger()
 	// Waiting signal
@@ -46,5 +50,7 @@ func waitSignal(httpServer *httpserver.Server) {
 	if err != nil {
 		logService.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
 	}
+	_ = storage.Close()
+	_ = pubsub.Close()
 	//TODO if you need rpc server see https://github.com/evrone/go-clean-template
 }

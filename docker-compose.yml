@@ -9,7 +9,7 @@ services:
       GIN_MODE: debug
       PG_URL: $PG_URL
       MIGRATION_SRC: file://files/migration
-      PUBSUB_EMULATOR_HOST: emulator:8085
+      PUBSUB_EMULATOR_HOST: emu-pubsub:8085
     working_dir: "/go/src/github.com/erdosam/the-app/"
     volumes:
       - $GOOGLE_CREDENTIAL:/etc/gcloud/credential.json
@@ -21,7 +21,7 @@ services:
     expose:
       - "8080"
     depends_on:
-      - emulator
+      - emu-pubsub
       - postgres
 
   dev2:
@@ -67,12 +67,21 @@ services:
       - :5672
       - :15672
 
-  emulator:
+  emu-pubsub:
     # run gcloud auth login if required
     image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
     ports:
       - :8085
     command: [ "gcloud", "beta", "emulators", "pubsub", "start", "--host-port=0.0.0.0:8085" ]
+
+  emu-storage:
+    image: fsouza/fake-gcs-server
+    command: -scheme http -port 4443
+    expose:
+      - "4443"
+    volumes:
+      - ./files/emulator/data:/data
+      - ./files/emulator/storage:/storage
 
   app:
     build:
