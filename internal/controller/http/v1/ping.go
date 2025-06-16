@@ -17,6 +17,7 @@ func (rh *routerHandler) initPingRoutes(parent *gin.RouterGroup) {
 	r := &pingRoute{rh.feature.Ping}
 
 	parent.GET("/pub-sub", r.testSendingPubsub)
+	parent.GET("/list", r.testListResponse)
 }
 
 func (r *pingRoute) testSendingPubsub(c *gin.Context) {
@@ -27,4 +28,8 @@ func (r *pingRoute) testSendingPubsub(c *gin.Context) {
 		return
 	}
 	httpserver.DetailJSON(c, gin.H{"message": fmt.Sprintf("Message '%s' has been sent", msg)})
+}
+
+func (r *pingRoute) testListResponse(c *gin.Context) {
+	httpserver.ListJSON(c, []string{})
 }

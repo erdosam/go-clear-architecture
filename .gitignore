@@ -6,6 +6,7 @@ files/*.drawio.bkp
 .idea/
 .vscode/
 .DS_STORE
+.DS_Store
 
 files/emulator/data/bucketname/*
 !files/emulator/data/bucketname/.gitkeep

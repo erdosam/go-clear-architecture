@@ -37,7 +37,7 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 	// Swagger
-	// TODO if you need this see https://github.com/evrone/go-clean-template
+	// NOTE if you need this see https://github.com/evrone/go-clean-template
 
 	// K8s probe
 	handler.GET("/ping", func(c *gin.Context) { c.JSON(http.StatusOK, "pong") })
@@ -45,12 +45,12 @@ func NewRouterHandler(log logger.Interface, f *Feature, m *Middleware) http.Hand
 	handler.PATCH("/load-policy", m.Authorization.LoadPolicy)
 
 	// Prometheus metrics
-	// TODO if you need this see https://github.com/evrone/go-clean-template
+	// NOTE if you need this see https://github.com/evrone/go-clean-template
 
 	v1 := handler.Group("/v1", m.Authentication.Authenticate)
 	{
 		handler.initPingRoutes(v1)
-		//TODO define other routes here
+		//NOTE define other routes here
 	}
 	return handler
 }

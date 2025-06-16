@@ -27,3 +27,4 @@ casbin:
 
 google:
   project_id: 'gcloud-project-123456'
+  bucket_name: 'bucket-test'
